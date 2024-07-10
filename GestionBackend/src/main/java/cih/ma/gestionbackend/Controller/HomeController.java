@@ -10,15 +10,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/v1")
 public class HomeController {
 
-    @PreAuthorize("hasRole('client-user')")
+    @PreAuthorize("hasRole('client_user')")
     @GetMapping
     public String hello(){
         return "Hello this is Home";
     }
 
 
-    @PreAuthorize("hasRole('client-admin')")
-    @GetMapping("/api/v1/ADMIN")
+    @PreAuthorize("hasRole('client_admin')")
+    @GetMapping("/ADMIN")
     public String hello_2(){
         return "Hello to ADMIN";
     }
