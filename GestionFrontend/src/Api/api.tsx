@@ -1,6 +1,6 @@
 // src/axios.js
 import axios from "axios";
-import keycloak from "./Keycloak/Keycloak";
+import keycloak from "../Keycloak/Keycloak";
 
 const instance = axios.create({
   baseURL: "http://localhost:8787/api/v1",
@@ -8,7 +8,7 @@ const instance = axios.create({
 
 instance.interceptors.request.use(
   async (config) => {
-    const token = keycloak.idToken;
+    const token = keycloak.token;
     console.log(token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;

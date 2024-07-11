@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Home from "./components/Home";
-import Admin from "./components/Admin";
+import Home from "./Pages/Home";
+import Admin from "./Pages/Admin";
 import { useKeycloak } from "@react-keycloak/web";
 import { useEffect } from "react";
 
@@ -12,16 +12,13 @@ const App = () => {
     return <div>Loading...</div>;
   }
   useEffect(() => {
-    if (!initialized && keycloak.authenticated) {
-      keycloak.logout();
-    } else if (initialized && !keycloak.authenticated) {
-      keycloak.login();
+    if (initialized) {
+      if (!keycloak.authenticated) {
+        keycloak.login();
+      }
     }
-  }, [initialized]);
+  }, [initialized, keycloak]);
 
-  if (!keycloak.authenticated) {
-    return <div>Not authenticated</div>;
-  }
   return (
     <>
       <Router>

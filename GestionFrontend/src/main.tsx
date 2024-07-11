@@ -1,4 +1,3 @@
-// src/main.tsx
 import React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
@@ -8,10 +7,10 @@ import keycloak from "./Keycloak/Keycloak.tsx";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);
-const initOption = {
-  onLoad: "login-required",
-  checkLoginIframe: false,
-};
+// const initOption = {
+//   onLoad: "login-required",
+//   checkLoginIframe: false,
+// };
 root.render(
   <ReactKeycloakProvider authClient={keycloak}>
     <App />

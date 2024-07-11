@@ -6,9 +6,9 @@ const keycloak = new Keycloak({
   clientId: "gestion-rest-api", // Replace with your Keycloak client ID
 });
 
-const initOptions = {
-  onLoad: 'login-required', // or 'check-sso'
-  checkLoginIframe: false,
-};
+// const initOptions = {
+//   onLoad: 'login-required', // or 'check-sso'
+//   checkLoginIframe: false,
+// };
 
 export default keycloak;

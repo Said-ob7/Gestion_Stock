@@ -1,13 +1,13 @@
-// src/components/Home.tsx
+// src/components/Admin.tsx
 import React, { useState, useEffect } from "react";
-import axios from "../api";
+import axios from "../Api/api";
 
-const Home: React.FC = () => {
+const Admin: React.FC = () => {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     axios
-      .get("/")
+      .get("/ADMIN")
       .then((response) => {
         setMessage(response.data);
       })
@@ -19,4 +19,4 @@ const Home: React.FC = () => {
   return <div>{message}</div>;
 };
 
-export default Home;
+export default Admin;
