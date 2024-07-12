@@ -1,4 +1,9 @@
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Navigate,
+} from "react-router-dom";
 import Home from "./Pages/Home";
 import Admin from "./Pages/Admin";
 import { useKeycloak } from "@react-keycloak/web";
@@ -23,8 +28,9 @@ const App = () => {
     <>
       <Router>
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Navigate to="/dashboard" />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/*" element={<Home />} />
         </Routes>
       </Router>
     </>
