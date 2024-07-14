@@ -1,5 +1,5 @@
 // src/components/Home.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
 import { FaRegBell } from "react-icons/fa6";
@@ -17,21 +17,39 @@ import Products from "@/components/Produits";
 import Orders from "@/components/Commandes";
 import Assignment from "@/components/Affectation";
 import Settings from "@/components/Settings";
-import Users from "@/components/Users";
+import Users from "@/components/Users/Users";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "@/components/ui/button";
-import { Ghost } from "lucide-react";
 
 const Home: React.FC = () => {
   const location = useLocation();
   const { keycloak } = useKeycloak();
 
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    if (keycloak.tokenParsed) {
+      const { name, preferred_username, given_name, family_name, email } =
+        keycloak.tokenParsed;
+
+      setUsername(preferred_username);
+
+      // Store user information in local storage
+      localStorage.setItem("name", name || "");
+      localStorage.setItem("preferred_username", preferred_username || "");
+      localStorage.setItem("given_name", given_name || "");
+      localStorage.setItem("family_name", family_name || "");
+      localStorage.setItem("email", email || "");
+    }
+  }, [keycloak.tokenParsed]);
+
   const logout = () => {
     keycloak.logout();
+    localStorage.clear(); // Clear local storage on logout
   };
 
   const getLinkClasses = (path: string) => {
-    return location.pathname === path
+    return location.pathname.startsWith(path)
       ? "flex flex-row items-center gap-4 cursor-pointer text-blue-500"
       : "flex flex-row items-center gap-4 cursor-pointer";
   };
@@ -49,6 +67,8 @@ const Home: React.FC = () => {
       case "/settings":
         return "Settings";
       case "/users":
+      case "/users/new":
+      case `/users/${location.pathname.split("/")[2]}`:
         return "Users";
       default:
         return "Dashboard";
@@ -65,6 +85,7 @@ const Home: React.FC = () => {
   };
 
   const isAdmin = hasResourceRole("client_admin", "gestion-rest-api");
+
   return (
     <>
       <div className="flex flex-row">
@@ -73,7 +94,7 @@ const Home: React.FC = () => {
           className="min-w-[200px] w-1/6 h-full h-screen flex flex-col"
         >
           <img className="h-14 mt-10 m-4" src={CIH} alt="" />
-          <div className="font-mono flex flex-col gap-12 text-xl font-bold mt-32 ml-12 mr-12">
+          <div className="font-mono flex flex-col gap-12 text-xl font-bold mt-20 ml-12 mr-12">
             <Link to="/dashboard" className={getLinkClasses("/dashboard")}>
               <RxDashboard /> Dashboard
             </Link>
@@ -106,6 +127,7 @@ const Home: React.FC = () => {
             <div className="flex flex-row items-center gap-6">
               <CiSearch className="cursor-pointer text-2xl " />
               <FaRegBell className="cursor-pointer text-2xl" />
+              <p>{username}</p>
               <Avatar className="cursor-pointer">
                 <AvatarImage src={av} alt="" />
                 <AvatarFallback>CN</AvatarFallback>
@@ -118,7 +140,7 @@ const Home: React.FC = () => {
               <Route path="/products" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/assignment" element={<Assignment />} />
-              {isAdmin && <Route path="/users" element={<Users />} />}
+              {isAdmin && <Route path="/users/*" element={<Users />} />}
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>

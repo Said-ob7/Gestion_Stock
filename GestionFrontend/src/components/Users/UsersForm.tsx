@@ -1,10 +1,13 @@
-// src/components/Users.tsx
-import React, { useState, useEffect } from "react";
-import { Input } from "./ui/input";
+// src/components/UserForm.tsx
+import React, { useState } from "react";
+import { Input } from "../ui/input";
 import { useKeycloak } from "@react-keycloak/web";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../ui/button";
 
-const Users: React.FC = () => {
+const UserForm: React.FC = () => {
   const { keycloak } = useKeycloak();
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -60,6 +63,7 @@ const Users: React.FC = () => {
           lastName: "",
           password: "",
         });
+        navigate("/users");
       } else {
         alert("Failed to create user.");
       }
@@ -71,7 +75,7 @@ const Users: React.FC = () => {
 
   return (
     <div>
-      <h2>Users Management</h2>
+      <h2>Create User</h2>
       <form onSubmit={handleSubmit}>
         <div>
           <label htmlFor="username">Username</label>
@@ -128,10 +132,10 @@ const Users: React.FC = () => {
             required
           />
         </div>
-        <button type="submit">Create User</button>
+        <Button type="submit">Create User</Button>
       </form>
     </div>
   );
 };
 
-export default Users;
+export default UserForm;
