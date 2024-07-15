@@ -2,6 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "../ui/button";
+import { FaRegUser } from "react-icons/fa";
+import { RiAdminLine } from "react-icons/ri";
+import { FaPlus } from "react-icons/fa";
 
 interface User {
   id: string;
@@ -129,11 +132,13 @@ const UsersList: React.FC = () => {
 
         const roles = await fetchUserRoles(user.id);
         user.roles = roles;
-        if (roles.includes("client_user")) {
-          clientUsers.push(user);
-        }
+        // if (roles.includes("client_user")) {
+        //   clientUsers.push(user);
+        // }
         if (roles.includes("client_admin")) {
           clientAdmins.push(user);
+        } else {
+          clientUsers.push(user);
         }
       }
 
@@ -149,29 +154,54 @@ const UsersList: React.FC = () => {
   }, [users, keycloak.token, clientId]);
 
   return (
-    <div>
-      <h2>Client Users</h2>
-      <ul>
-        {clientUsers.map((user) => (
-          <li key={user.id}>
-            <Link to={`/users/${user.id}`}>{user.username}</Link>
-          </li>
-        ))}
-      </ul>
+    <>
+      <div>
+        <h2 className="font-mono font-bold text-xl">Utilisateurs :</h2>
+        <ul className="flex flex-col gap-4 mx-4 my-8">
+          {clientUsers.map((user) => (
+            <li key={user.id}>
+              <Link to={`/users/${user.id}`}>
+                <div
+                  style={{ backgroundColor: "#f8f9fa" }}
+                  className="h-14 w-[800px]  flex flex-row items-center gap-[200px] rounded-md shadow"
+                >
+                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
+                    <FaRegUser className="ml-8 " />
+                    <p className="font-sans uppercase ">{user.username}</p>
+                  </div>
+                  <p>{user.email}</p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
 
-      <h2>Client Admins</h2>
-      <ul>
-        {clientAdmins.map((user) => (
-          <li key={user.id}>
-            <Link to={`/users/${user.id}`}>{user.username}</Link>
-          </li>
-        ))}
-      </ul>
-
-      <Link to="/users/new">
-        <Button>Create New User</Button>
+        <h2 className="font-mono font-bold text-xl">Administrateurs :</h2>
+        <ul className="flex flex-col gap-4 mx-4 my-8">
+          {clientAdmins.map((user) => (
+            <li key={user.id}>
+              <Link to={`/users/${user.id}`}>
+                <div
+                  style={{ backgroundColor: "#f8f9fa" }}
+                  className="h-14 w-[800px]  flex flex-row items-center gap-[200px] rounded-md shadow"
+                >
+                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
+                    <RiAdminLine className="ml-8 h-6 w-6" />
+                    <p className="font-sans uppercase">{user.username}</p>
+                  </div>
+                  <p>{user.email}</p>
+                </div>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+      <Link className="fixed bottom-14 right-14" to="/users/new">
+        <Button>
+          <FaPlus />
+        </Button>
       </Link>
-    </div>
+    </>
   );
 };
 

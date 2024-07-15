@@ -93,7 +93,9 @@ const Home: React.FC = () => {
           style={{ backgroundColor: "#F9F9F9" }}
           className="min-w-[200px] w-1/6 h-full h-screen flex flex-col"
         >
-          <img className="h-14 mt-10 m-4" src={CIH} alt="" />
+          <Link className="mt-10 m-4 flex justify-center" to={"/"}>
+            <img className="h-14 " src={CIH} alt="" />
+          </Link>
           <div className="font-mono flex flex-col gap-12 text-xl font-bold mt-20 ml-12 mr-12">
             <Link to="/dashboard" className={getLinkClasses("/dashboard")}>
               <RxDashboard /> Dashboard
@@ -121,20 +123,23 @@ const Home: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="flex-1">
+        <div className="flex-1 font-mono">
           <div className="Navbar h-32 flex flex-row items-center justify-between px-10 ">
             <h1 className="text-3xl font-bold">{getTitle()}</h1>
             <div className="flex flex-row items-center gap-6">
-              <CiSearch className="cursor-pointer text-2xl " />
+              {/* <CiSearch className="cursor-pointer text-2xl " /> */}
               <FaRegBell className="cursor-pointer text-2xl" />
-              <p>{username}</p>
+              <p className="uppercase ">{username}</p>
               <Avatar className="cursor-pointer">
                 <AvatarImage src={av} alt="" />
                 <AvatarFallback>CN</AvatarFallback>
               </Avatar>
             </div>
           </div>
-          <div>
+          <div
+            className="mx-8 font-mono"
+            // style={{ backgroundColor: "#f8f9fa" }}
+          >
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products" element={<Products />} />
