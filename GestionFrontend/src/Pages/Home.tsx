@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
 import { CiSearch } from "react-icons/ci";
@@ -123,9 +122,9 @@ const Home: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="flex-1 font-mono">
+        <div className="flex-1   right-0 top-0 h-screen overflow-y-auto">
           <div className="Navbar h-32 flex flex-row items-center justify-between px-10 ">
-            <h1 className="text-3xl font-bold">{getTitle()}</h1>
+            <h1 className="text-3xl font-extrabold uppercase">{getTitle()}</h1>
             <div className="flex flex-row items-center gap-6">
               {/* <CiSearch className="cursor-pointer text-2xl " /> */}
               <FaRegBell className="cursor-pointer text-2xl" />
