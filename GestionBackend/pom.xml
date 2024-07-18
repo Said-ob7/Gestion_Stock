@@ -46,7 +46,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
         <dependency>
             <groupId>com.mysql</groupId>
             <artifactId>mysql-connector-j</artifactId>
@@ -67,8 +66,35 @@
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
         </dependency>
-    </dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+        <!-- Dépendance pour iText kernel -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>kernel</artifactId>
+            <version>7.1.14</version>
+        </dependency>
 
+        <!-- Dépendance pour iText layout -->
+        <dependency>
+            <groupId>com.itextpdf</groupId>
+            <artifactId>layout</artifactId>
+            <version>7.1.14</version>
+        </dependency>
+    </dependencies>
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
+        </repository>
+        <repository>
+            <id>itext</id>
+            <url>https://repo.itextsupport.com/releases</url>
+        </repository>
+    </repositories>
     <build>
         <plugins>
             <plugin>
@@ -85,5 +111,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>
