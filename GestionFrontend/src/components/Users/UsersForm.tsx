@@ -1,4 +1,3 @@
-// src/components/UserForm.tsx
 import React, { useState } from "react";
 import { Input } from "../ui/input";
 import { useKeycloak } from "@react-keycloak/web";
@@ -15,6 +14,8 @@ const UserForm: React.FC = () => {
     firstName: "",
     lastName: "",
     password: "",
+    matricule: "",
+    profile: "/src/assets/avatar.png", // Default profile picture URL
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -43,6 +44,10 @@ const UserForm: React.FC = () => {
           temporary: false,
         },
       ],
+      attributes: {
+        matricule: formData.matricule,
+        profile: formData.profile,
+      },
     };
 
     try {
@@ -66,6 +71,8 @@ const UserForm: React.FC = () => {
           firstName: "",
           lastName: "",
           password: "",
+          matricule: "",
+          profile: "/src/assets/avatar.png", // Reset profile to default URL
         });
         navigate("/users");
       } else if (response.status === 409) {
@@ -92,6 +99,20 @@ const UserForm: React.FC = () => {
       <div className="w-[700px] mx-14">
         <h2 className="text-xl font-bold">Create User</h2>
         <form onSubmit={handleSubmit}>
+          {/* <div className="mt-4 flex flex-row items-center">
+            <label className="w-28" htmlFor="matricule">
+              Matricule :
+            </label>
+            <Input
+              className="w-[500px] h-14 mx-4"
+              type="text"
+              name="matricule"
+              id="matricule"
+              value={formData.matricule}
+              onChange={handleChange}
+              required
+            />
+          </div> */}
           <div className="mt-4 flex flex-row items-center">
             <label className="w-28" htmlFor="username">
               Username :
@@ -162,6 +183,7 @@ const UserForm: React.FC = () => {
               required
             />
           </div>
+
           <div className="flex justify-end m-14 gap-8">
             <Button type="submit" className="w-32">
               Create User
