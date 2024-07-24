@@ -1,27 +1,35 @@
 import { useState } from 'react';
 import axios from 'axios';
+import './FileUpload.css'; // Ensure this file exists and is correctly imported
 
 const FileUpload = () => {
-    const [file, setFile] = useState<File | null>(null);
-    const [nomC, setNomC] = useState<string>("");
+    const [bonCommande, setBonCommande] = useState<File | null>(null);
+    const [bonLivraison, setBonLivraison] = useState<File | null>(null);
+    const [dte, setDte] = useState<string>("");
     const [numL, setNumL] = useState<string>("");
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, setFile: React.Dispatch<React.SetStateAction<File | null>>) => {
         if (e.target.files && e.target.files[0]) {
             setFile(e.target.files[0]);
         }
     };
 
     const handleUpload = async () => {
-        if (!file) {
-            console.error('No file selected');
+        if (!bonCommande || !bonLivraison) {
+            setError('Both files must be selected');
             return;
         }
 
         const formData = new FormData();
-        formData.append('file', file);
-        formData.append('nomC', nomC);
+        formData.append('bonCommande', bonCommande);
+        formData.append('bonLivraison', bonLivraison);
+        formData.append('dte', dte);
         formData.append('numL', numL);
+
+        setIsLoading(true);
+        setError(null);
 
         try {
             const response = await axios.post('http://localhost:8787/api/bonc/upload', formData, {
@@ -31,16 +39,45 @@ const FileUpload = () => {
             });
             console.log(response.data);
         } catch (error) {
-            console.error('Error uploading file:', error);
+            setError('Error uploading files');
+            console.error('Error uploading files:', error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
     return (
-        <div>
-            <input type="text" placeholder="Num  Commande" value={nomC} onChange={(e) => setNomC(e.target.value)} />
-            <input type="text" placeholder="Numero serie" value={numL} onChange={(e) => setNumL(e.target.value)} />
-            <input type="file" onChange={handleFileChange} />
-            <button onClick={handleUpload}>Upload</button>
+        <div className="file-upload-container">
+            <div className="form-group">
+                <label htmlFor="dte">Date de la commande :</label>
+                <input
+                    id="dte"
+                    type="date"
+                    value={dte}
+                    onChange={(e) => setDte(e.target.value)}
+                />
+            </div>
+            <div className="form-group">
+                <label htmlFor="numL">Numéro série :</label>
+                <input
+                    id="numL"
+                    type="text"
+                    value={numL}
+                    onChange={(e) => setNumL(e.target.value)}
+                />
+            </div>
+            <div className="form-group">
+                <label htmlFor="bonCommande">Bon de commande (PDF) :</label>
+                <input id="bonCommande" type="file" onChange={(e) => handleFileChange(e, setBonCommande)} />
+            </div>
+            <div className="form-group">
+                <label htmlFor="bonLivraison">Bon de livraison (PDF) :</label>
+                <input id="bonLivraison" type="file" onChange={(e) => handleFileChange(e, setBonLivraison)} />
+            </div>
+            <button className="upload-file" onClick={handleUpload} disabled={isLoading}>
+                {isLoading ? 'Uploading...' : 'Upload'}
+            </button>
+            {error && <p className="error-message">{error}</p>}
         </div>
     );
 };

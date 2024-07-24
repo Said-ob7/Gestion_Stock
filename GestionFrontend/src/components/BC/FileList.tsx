@@ -1,49 +1,55 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 
+
+
+
 interface BonC {
-    idbc: number;
-    nomC: string;
+    id: number;
+    dte: string;  // or Date if you parse it
     numL: string;
-    pdfPath: string;
+    bonCpdfPath: string;
+    bonLpdfPath: string;
 }
 
-const FileList = () => {
-    const [files, setFiles] = useState<BonC[]>([]);
+
+
+
+
+const CommandeList: React.FC = () => {
+    const [commandes, setCommandes] = useState<BonC[]>([]);
 
     useEffect(() => {
-        const fetchFiles = async () => {
-            try {
-                const response = await axios.get<BonC[]>('http://localhost:8787/api/bonc/all');
-                setFiles(response.data);
-            } catch (error) {
-                console.error('Error fetching files:', error);
-            }
-        };
-
-        fetchFiles();
+        axios.get<BonC[]>('http://localhost:8080/api/bonc/all')
+            .then(response => {
+                setCommandes(response.data);
+            })
+            .catch(error => {
+                console.error('There was an error fetching the commandes!', error);
+            });
     }, []);
 
-    const handleDelete = async (id: number) => {
-        try {
-            await axios.delete(`http://localhost:8787/api/bonc/${id}`);
-            setFiles(files.filter((file) => file.idbc !== id));
-        } catch (error) {
-            console.error('Error deleting file:', error);
-        }
+    const viewPdf = (pdfPath: string) => {
+        window.open(`http://localhost:8080/${pdfPath}`);
     };
 
     return (
         <div>
-            {files.map((file) => (
-                <div key={file.idbc}>
-                    <p className="font-extrabold text-2xl">{file.nomC} ({file.numL})</p>
-
-                    <button onClick={() => handleDelete(file.idbc)}>Delete</button>
-                </div>
-            ))}
+            <h1>Commandes List</h1>
+            <ul>
+                {commandes.map((commande) => (
+                    <li key={commande.id}>
+                        <div>
+                            <p>Date: {new Date(commande.dte).toLocaleDateString()}</p>
+                            <p>NumL: {commande.numL}</p>
+                            <button onClick={() => viewPdf(commande.bonCpdfPath)}>View BonCommande</button>
+                            <button onClick={() => viewPdf(commande.bonLpdfPath)}>View BonLivraison</button>
+                        </div>
+                    </li>
+                ))}
+            </ul>
         </div>
     );
 };
 
-export default FileList;
+export default CommandeList;
