@@ -3,7 +3,7 @@ import axios from "axios";
 import keycloak from "../Keycloak/Keycloak";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8787/api/v1",
+  baseURL: "http://localhost:8080/api/v1",
 });
 
 instance.interceptors.request.use(

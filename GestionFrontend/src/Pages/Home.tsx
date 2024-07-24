@@ -1,7 +1,7 @@
 // src/components/Home.tsx
 import React, { useEffect, useState } from "react";
 import { Link, Route, Routes, useLocation } from "react-router-dom";
-import { CiSearch } from "react-icons/ci";
+
 import { FaRegBell } from "react-icons/fa6";
 import { FaComputer } from "react-icons/fa6";
 import { RxDashboard } from "react-icons/rx";
@@ -10,10 +10,12 @@ import { FaPersonCirclePlus } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import av from "@/assets/avatar.png";
-import CIH from "@/assets/CIH.svg";
+// @ts-ignore
+import av from '@/assets/avatar.png';
+// @ts-ignore
+import CIH from "/src/assets/CIH.svg";
 import Dashboard from "@/components/Dashboard";
-import Products from "@/components/Produits";
+import Products from "@/components/Produits.tsx";
 import Orders from "@/components/Commandes";
 import Assignment from "@/components/Affectation";
 import Settings from "@/components/Settings";
@@ -84,19 +86,19 @@ const Home: React.FC = () => {
     );
   };
 
-  const isAdmin = hasResourceRole("client_admin", "gestion-rest-api");
-
+  const isAdmin = hasResourceRole("client_admin", "S256");
+console.log(isAdmin)
   return (
     <>
       <div className="flex flex-row">
         <div
           style={{ backgroundColor: "#F9F9F9" }}
-          className="min-w-[200px] w-1/6 h-full h-screen flex flex-col"
+          className="min-w-[200px] w-1/6 h-screen  flex flex-col"
         >
           <Link className="mt-10 m-4 flex justify-center" to={"/"}>
             <img className="h-14 " src={CIH} alt="" />
           </Link>
-          <div className="font-mono flex flex-col gap-12 text-xl font-bold mt-20 ml-12 mr-12">
+          <div className="font-mono flex flex-col gap-8 text-xl font-bold mt-20 ml-12 mr-12">
             <Link to="/dashboard" className={getLinkClasses("/dashboard")}>
               <RxDashboard /> Dashboard
             </Link>
@@ -142,7 +144,7 @@ const Home: React.FC = () => {
           >
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
+              <Route path="/products/*" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/assignment" element={<Assignment />} />
               {isAdmin && <Route path="/users/*" element={<Users />} />}
