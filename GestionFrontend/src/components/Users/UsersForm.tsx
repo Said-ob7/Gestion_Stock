@@ -99,7 +99,7 @@ const UserForm: React.FC = () => {
       <div className="w-[700px] mx-14">
         <h2 className="text-xl font-bold">Create User</h2>
         <form onSubmit={handleSubmit}>
-          {/* <div className="mt-4 flex flex-row items-center">
+          <div className="mt-4 flex flex-row items-center">
             <label className="w-28" htmlFor="matricule">
               Matricule :
             </label>
@@ -112,7 +112,7 @@ const UserForm: React.FC = () => {
               onChange={handleChange}
               required
             />
-          </div> */}
+          </div>
           <div className="mt-4 flex flex-row items-center">
             <label className="w-28" htmlFor="username">
               Username :

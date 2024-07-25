@@ -10,7 +10,7 @@ import { FaRegUser } from "react-icons/fa";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CIH from "@/assets/CIH.svg";
 import Dashboard from "@/components/Dashboard";
-import Products from "@/components/Produits";
+import Products from "@/components/Products/Produits";
 import Orders from "@/components/Commandes";
 import Assignment from "@/components/Affectation";
 import Settings from "@/components/Settings";
@@ -138,22 +138,24 @@ const Home: React.FC = () => {
               {/* <CiSearch className="cursor-pointer text-2xl " /> */}
               <FaRegBell className="cursor-pointer text-2xl" />
               <p className="uppercase ">{username}</p>
-              <Avatar className="cursor-pointer">
-                <AvatarImage
-                  className="object-cover"
-                  src={avatarUrl}
-                  alt="User Avatar"
-                />
-                <AvatarFallback>
-                  {username?.charAt(0).toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
+              <Link to={"/settings"}>
+                <Avatar className="cursor-pointer">
+                  <AvatarImage
+                    className="object-cover"
+                    src={avatarUrl}
+                    alt="User Avatar"
+                  />
+                  <AvatarFallback className="uppercase">
+                    {username}
+                  </AvatarFallback>
+                </Avatar>
+              </Link>
             </div>
           </div>
           <div className="mx-8 font-mono">
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
+              <Route path="/products/*" element={<Products />} />
               <Route path="/orders" element={<Orders />} />
               <Route path="/assignment" element={<Assignment />} />
               {isAdmin && <Route path="/users/*" element={<Users />} />}

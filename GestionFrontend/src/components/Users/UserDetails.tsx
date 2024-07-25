@@ -1,4 +1,3 @@
-// src/components/UserDetails.tsx
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
@@ -16,6 +15,7 @@ const UserDetails: React.FC = () => {
     email: "",
     firstName: "",
     lastName: "",
+    matricule: "",
   });
 
   useEffect(() => {
@@ -32,11 +32,16 @@ const UserDetails: React.FC = () => {
         if (response.ok) {
           const data = await response.json();
           setUser(data);
+
+          const matricule = data.attributes?.matricule
+            ? data.attributes.matricule[0]
+            : "";
           setFormData({
             username: data.username,
             email: data.email,
             firstName: data.firstName,
             lastName: data.lastName,
+            matricule: matricule,
           });
         } else {
           console.error("Failed to fetch user details.");
@@ -67,6 +72,9 @@ const UserDetails: React.FC = () => {
       email: formData.email,
       firstName: formData.firstName,
       lastName: formData.lastName,
+      attributes: {
+        matricule: [formData.matricule],
+      },
     };
 
     try {
@@ -138,6 +146,20 @@ const UserDetails: React.FC = () => {
       <div className="w-[700px] mx-14">
         <h2 className="text-xl font-bold">User Details :</h2>
         <form onSubmit={handleSubmit}>
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28" htmlFor="matricule">
+              Matricule :
+            </label>
+            <Input
+              className="w-[500px] h-14 m-4"
+              type="text"
+              name="matricule"
+              id="matricule"
+              value={formData.matricule}
+              onChange={handleChange}
+              required
+            />
+          </div>
           <div className="mt-4 flex flex-row items-center">
             <label className="w-28" htmlFor="username">
               Username :

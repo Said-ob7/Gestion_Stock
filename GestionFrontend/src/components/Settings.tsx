@@ -204,59 +204,69 @@ const Settings: React.FC = () => {
           </div>
         </form>
         <h2 className="text-xl font-bold mt-10">User Information</h2>
-        <div className="mt-4 flex flex-row items-center">
-          <label className="w-28">Username:</label>
-          <p className="w-[500px] h-14 mx-4">{user?.preferred_username}</p>
+        <div className="mx-14">
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28 font-bold">Matricule:</label>
+            <p className="w-[500px] h-14 mx-4 flex items-center">
+              {user?.matricule}
+            </p>
+          </div>
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28 font-bold">Username:</label>
+            <p className="w-[500px] h-14 mx-4 flex items-center">
+              {user?.preferred_username}
+            </p>
+          </div>
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28 font-bold">Email:</label>
+            <p className="w-[500px] h-14 mx-4 flex items-center">
+              {user?.email}
+            </p>
+          </div>
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28 font-bold">First Name:</label>
+            <p className="w-[500px] h-14 mx-4 flex items-center">
+              {user?.given_name}
+            </p>
+          </div>
+          <div className="mt-4 flex flex-row items-center">
+            <label className="w-28 font-bold">Last Name:</label>
+            <p className="w-[500px] h-14 mx-4 flex items-center">
+              {user?.family_name}
+            </p>
+          </div>
         </div>
-        <div className="mt-4 flex flex-row items-center">
-          <label className="w-28">Email:</label>
-          <p className="w-[500px] h-14 mx-4">{user?.email}</p>
-        </div>
-        <div className="mt-4 flex flex-row items-center">
-          <label className="w-28">First Name:</label>
-          <p className="w-[500px] h-14 mx-4">{user?.given_name}</p>
-        </div>
-        <div className="mt-4 flex flex-row items-center">
-          <label className="w-28">Last Name:</label>
-          <p className="w-[500px] h-14 mx-4">{user?.family_name}</p>
-        </div>
-        <h2 className="text-xl font-bold mt-10">Change Password</h2>
+        <h2 className="text-xl font-bold mt-10">Changer Mot de Passe</h2>
         <form onSubmit={handlePasswordSubmit}>
           <div className="mt-4 flex flex-row items-center">
-            <label className="w-28" htmlFor="oldPassword">
-              Old Password:
-            </label>
             <Input
               className="w-[500px] h-14 mx-4"
               type="password"
               name="oldPassword"
               id="oldPassword"
+              placeholder="Ancien Mot de passe"
               value={formData.oldPassword}
               onChange={handleChange}
             />
           </div>
           <div className="mt-4 flex flex-row items-center">
-            <label className="w-28" htmlFor="newPassword">
-              New Password:
-            </label>
             <Input
               className="w-[500px] h-14 mx-4"
               type="password"
               name="newPassword"
               id="newPassword"
+              placeholder="Nouveau Mot de passe"
               value={formData.newPassword}
               onChange={handleChange}
             />
           </div>
           <div className="mt-4 flex flex-row items-center">
-            <label className="w-28" htmlFor="confirmPassword">
-              Confirm Password:
-            </label>
             <Input
               className="w-[500px] h-14 mx-4"
               type="password"
               name="confirmPassword"
               id="confirmPassword"
+              placeholder="Confirmer Mot de passe"
               value={formData.confirmPassword}
               onChange={handleChange}
             />

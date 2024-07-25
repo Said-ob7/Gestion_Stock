@@ -3,15 +3,13 @@ import axios from "axios";
 import keycloak from "../Keycloak/Keycloak";
 
 const instance = axios.create({
-  baseURL: "http://localhost:8787/api/v1",
+  baseURL: "http://localhost:8787/api",
 });
 
 instance.interceptors.request.use(
   async (config) => {
-    const token = keycloak.token;
-    console.log(token);
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (keycloak.token) {
+      config.headers.Authorization = `Bearer ${keycloak.token}`;
     }
     return config;
   },

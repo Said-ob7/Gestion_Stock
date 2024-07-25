@@ -2,9 +2,9 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "../ui/button";
-import { FaRegUser } from "react-icons/fa";
+import { FaRegUser, FaPlus, FaSearch, FaFilter } from "react-icons/fa";
 import { RiAdminLine } from "react-icons/ri";
-import { FaPlus } from "react-icons/fa";
+import { CiSearch, CiFilter } from "react-icons/ci";
 
 interface User {
   id: string;
@@ -12,6 +12,8 @@ interface User {
   email?: string;
   firstName?: string;
   lastName?: string;
+  createdAt?: string;
+  matricule?: string;
   roles?: string[];
 }
 
@@ -21,6 +23,10 @@ const UsersList: React.FC = () => {
   const [clientUsers, setClientUsers] = useState<User[]>([]);
   const [clientAdmins, setClientAdmins] = useState<User[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState<string>("");
+  const [filterDate, setFilterDate] = useState<string>("");
+  const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
+  const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
 
   useEffect(() => {
     const fetchClientId = async () => {
@@ -68,7 +74,6 @@ const UsersList: React.FC = () => {
 
         if (response.ok) {
           const data = await response.json();
-          //console.log("Fetched users:", data);
           setUsers(data);
         } else {
           console.error("Failed to fetch users.");
@@ -114,11 +119,36 @@ const UsersList: React.FC = () => {
           ...clientRoles.map((role: { name: string }) => role.name),
         ];
 
-        // console.log(`Fetched roles for user ${userId}:`, roles);
         return roles;
       } catch (error) {
         console.error(`Error fetching roles for user ${userId}:`, error);
         return [];
+      }
+    };
+
+    const fetchUserDetails = async (user: User) => {
+      const userDetailsUrl = `http://localhost:8080/admin/realms/said/users/${user.id}`; // Replace with your Keycloak URL
+      try {
+        const response = await fetch(userDetailsUrl, {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          },
+        });
+
+        if (response.ok) {
+          const userDetails = await response.json();
+          return {
+            ...user,
+            createdAt: userDetails.createdTimestamp,
+            matricule: userDetails.attributes?.matricule || "",
+          };
+        } else {
+          console.error(`Failed to fetch details for user ${user.id}`);
+          return user;
+        }
+      } catch (error) {
+        console.error(`Error fetching details for user ${user.id}:`, error);
+        return user;
       }
     };
 
@@ -131,10 +161,11 @@ const UsersList: React.FC = () => {
         if (user.id === currentUserId) continue; // Exclude the currently authenticated user
 
         const roles = await fetchUserRoles(user.id);
+        const userDetails = await fetchUserDetails(user);
         user.roles = roles;
-        // if (roles.includes("client_user")) {
-        //   clientUsers.push(user);
-        // }
+        user.createdAt = userDetails.createdAt;
+        user.matricule = userDetails.matricule;
+
         if (roles.includes("client_admin")) {
           clientAdmins.push(user);
         } else {
@@ -142,8 +173,6 @@ const UsersList: React.FC = () => {
         }
       }
 
-      //   console.log("Client Users:", clientUsers);
-      //   console.log("Client Admins:", clientAdmins);
       setClientUsers(clientUsers);
       setClientAdmins(clientAdmins);
     };
@@ -153,22 +182,101 @@ const UsersList: React.FC = () => {
     }
   }, [users, keycloak.token, clientId]);
 
+  const filteredUsers = clientUsers.filter((user) => {
+    const matchesSearch =
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.matricule?.includes(searchTerm.toLowerCase());
+    const matchesDate = filterDate
+      ? new Date(user.createdAt || 0).toDateString() ===
+        new Date(filterDate).toDateString()
+      : true;
+    return matchesSearch && matchesDate;
+  });
+
+  const filteredAdmins = clientAdmins.filter((user) => {
+    const matchesSearch =
+      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.matricule?.includes(searchTerm.toLowerCase());
+    const matchesDate = filterDate
+      ? new Date(user.createdAt || 0).toDateString() ===
+        new Date(filterDate).toDateString()
+      : true;
+    return matchesSearch && matchesDate;
+  });
+
+  const handleSearchClick = () => {
+    if (showSearchModal) {
+      setShowSearchModal(false);
+    } else {
+      setShowSearchModal(true);
+    }
+  };
+
+  const handleFilterClick = () => {
+    if (showFilterModal) {
+      setShowFilterModal(false);
+    } else {
+      setShowFilterModal(true);
+    }
+  };
+
   return (
     <>
       <div>
-        <h2 className="font-mono font-bold text-xl">Utilisateurs :</h2>
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="font-mono font-bold text-xl">Utilisateurs :</h2>
+          <div className="flex gap-4">
+            <CiSearch
+              onClick={handleSearchClick}
+              className="cursor-pointer"
+              size={24}
+            />
+
+            <CiFilter
+              onClick={handleFilterClick}
+              className="cursor-pointer"
+              size={24}
+            />
+          </div>
+        </div>
+        <div className="flex flex-row items-center">
+          {showSearchModal && (
+            <div className="">
+              <input
+                type="text"
+                placeholder="Search by name or matricule"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md mb-4 w-full min-w-[400px]"
+              />
+            </div>
+          )}
+          {showFilterModal && (
+            <div className="">
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md mb-4 w-full"
+              />
+            </div>
+          )}
+        </div>
         <ul className="flex flex-col gap-4 mx-4 my-8">
-          {clientUsers.map((user) => (
-            <li key={user.id}>
+          {filteredUsers.map((user) => (
+            <li key={user.id} className="w-[900px]">
               <Link to={`/users/${user.id}`}>
                 <div
                   style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14 w-[800px]  flex flex-row items-center gap-[200px] rounded-md shadow"
+                  className="h-14   flex flex-row items-center gap-[200px] rounded-md shadow"
                 >
                   <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
                     <FaRegUser className="ml-8 " />
-                    <p className="font-sans uppercase ">{user.username}</p>
+                    <p className="font-sans uppercase ">{user.matricule}</p>
                   </div>
+                  <p className="uppercase font-extrabold w-[50px]">
+                    {user.username}
+                  </p>
                   <p>{user.email}</p>
                 </div>
               </Link>
@@ -178,17 +286,20 @@ const UsersList: React.FC = () => {
 
         <h2 className="font-mono font-bold text-xl">Administrateurs :</h2>
         <ul className="flex flex-col gap-4 mx-4 my-8">
-          {clientAdmins.map((user) => (
-            <li key={user.id}>
+          {filteredAdmins.map((user) => (
+            <li key={user.id} className="w-[900px]">
               <Link to={`/users/${user.id}`}>
                 <div
                   style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14 w-[800px]  flex flex-row items-center gap-[200px] rounded-md shadow"
+                  className="h-14  flex flex-row items-center gap-[200px] rounded-md shadow"
                 >
                   <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
                     <RiAdminLine className="ml-8 h-6 w-6" />
-                    <p className="font-sans uppercase">{user.username}</p>
+                    <p className="font-sans uppercase ">{user.matricule}</p>
                   </div>
+                  <p className="uppercase font-extrabold w-[50px]">
+                    {user.username}
+                  </p>
                   <p>{user.email}</p>
                 </div>
               </Link>
