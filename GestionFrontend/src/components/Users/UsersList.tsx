@@ -30,7 +30,7 @@ const UsersList: React.FC = () => {
 
   useEffect(() => {
     const fetchClientId = async () => {
-      const url = "http://localhost:8080/admin/realms/said/clients"; // Replace with your Keycloak URL
+      const url = "http://localhost:8080/admin/realms/Gestion_Stock/clients"; // Replace with your Keycloak URL
 
       try {
         const response = await fetch(url, {
@@ -43,7 +43,7 @@ const UsersList: React.FC = () => {
           const clients = await response.json();
           const client = clients.find(
             (client: { clientId: string }) =>
-              client.clientId === "gestion-rest-api"
+              client.clientId === "S256"
           );
           if (client) {
             setClientId(client.id);
@@ -63,7 +63,7 @@ const UsersList: React.FC = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const url = "http://localhost:8080/admin/realms/said/users"; // Replace with your Keycloak URL
+      const url = "http://localhost:8080/admin/realms/Gestion_Stock/users"; // Replace with your Keycloak URL
 
       try {
         const response = await fetch(url, {
@@ -90,8 +90,8 @@ const UsersList: React.FC = () => {
     if (!clientId) return;
 
     const fetchUserRoles = async (userId: string): Promise<string[]> => {
-      const realmRolesUrl = `http://localhost:8080/admin/realms/said/users/${userId}/role-mappings/realm`; // Replace with your Keycloak URL
-      const clientRolesUrl = `http://localhost:8080/admin/realms/said/users/${userId}/role-mappings/clients/${clientId}`; // Replace with your Keycloak URL
+      const realmRolesUrl = `http://localhost:8080/admin/realms/Gestion_Stock/users/${userId}/role-mappings/realm`; // Replace with your Keycloak URL
+      const clientRolesUrl = `http://localhost:8080/admin/realms/Gestion_Stock/users/${userId}/role-mappings/clients/${clientId}`; // Replace with your Keycloak URL
 
       try {
         const [realmRolesResponse, clientRolesResponse] = await Promise.all([
