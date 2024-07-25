@@ -1,238 +1,372 @@
-import React, { useState } from "react";
-import { FaFilter } from 'react-icons/fa';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import keycloak from '@/Keycloak/Keycloak';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
+import { MdModeEdit } from "react-icons/md";
 
 interface Commande {
-  id: number;
-  numero: string;
-  date: string;
-  bonCommande?: File;
-  bonLivraison?: File;
+  idbc: number;
+  numL: string;
+  dte: string;
+  BonCpdfPath: string | null;
+  BonLpdfPath: string | null;
 }
 
 const Commandes = () => {
   const [commandes, setCommandes] = useState<Commande[]>([]);
   const [nouvelleCommande, setNouvelleCommande] = useState<Commande>({
-    id: 0,
-    numero: "",
-    date: "",
-    bonCommande: undefined,
-    bonLivraison: undefined,
+    idbc: 0,
+    numL: "",
+    dte: "",
+    BonCpdfPath: null,
+    BonLpdfPath: null,
   });
-  const [formVisible, setFormVisible] = useState<boolean>(false);
+  const [formVisible, setFormVisible] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [nextId, setNextId] = useState<number>(1);
-  const [filtrageActif, setFiltrageActif] = useState<boolean>(false);
-  const [critereFiltrage, setCritereFiltrage] = useState<'numero' | 'date' | null>(null);
-  const [valeurFiltre, setValeurFiltre] = useState<Date | null>(null);
+  const [commandeEnModification, setCommandeEnModification] = useState<Commande | null>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, files } = e.target;
-    if (name === "valeurFiltre") {
-      setValeurFiltre(value ? new Date(value) : null);
-    } else if (name === "bonCommande" || name === "bonLivraison") {
+
+    if (name === 'BonCpdfPath' || name === 'BonLpdfPath') {
+      // Gestion des fichiers
       setNouvelleCommande(prev => ({
         ...prev,
-        [name]: files?.[0],
+        [name]: files ? files[0] : null
       }));
     } else {
+      // Gestion des champs de texte
       setNouvelleCommande(prev => ({
         ...prev,
-        [name]: value,
+        [name]: value
       }));
     }
   };
 
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-    if (!nouvelleCommande.numero) newErrors.numero = "Le numéro de la commande est requis.";
-    if (!nouvelleCommande.date) newErrors.date = "La date de la commande est requise.";
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const handleModifierChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value, files } = e.target;
+
+    if (name === 'BonCpdfPath' || name === 'BonLpdfPath') {
+      // Gestion des fichiers
+      setCommandeEnModification(prev => ({
+        ...prev!,
+        [name]: files ? files[0] : null
+      }));
+    } else {
+      // Gestion des champs de texte
+      setCommandeEnModification(prev => ({
+        ...prev!,
+        [name]: value
+      }));
+    }
   };
 
-  const handleAjouterCommande = (e: React.FormEvent) => {
+  const validateForm = () => {
+    let valid = true;
+    let errors: { [key: string]: string } = {};
+
+    if (!nouvelleCommande.numL) {
+      errors.numL = "Le numéro de commande est requis";
+      valid = false;
+    }
+    if (!nouvelleCommande.dte) {
+      errors.dte = "La date de commande est requise";
+      valid = false;
+    }
+    if (!nouvelleCommande.BonCpdfPath) {
+      errors.BonCpdfPath = "Le fichier bon de commande est requis";
+      valid = false;
+    }
+    if (!nouvelleCommande.BonLpdfPath) {
+      errors.BonLpdfPath = "Le fichier bon de livraison est requis";
+      valid = false;
+    }
+
+    setErrors(errors);
+    return valid;
+  };
+
+  const handleAjouterCommande = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (validateForm()) {
-      const commandeAvecId = { ...nouvelleCommande, id: nextId };
-      setCommandes(prev => [...prev, commandeAvecId]);
-      setNouvelleCommande({ id: 0, numero: "", date: "", bonCommande: undefined, bonLivraison: undefined });
-      setErrors({});
+    if (!validateForm()) {
+      return;
+    }
+
+    const formData = new FormData();
+    if (nouvelleCommande.BonCpdfPath) {
+      formData.append('BonCpdfPath', nouvelleCommande.BonCpdfPath);
+    }
+    if (nouvelleCommande.BonLpdfPath) {
+      formData.append('BonLpdfPath', nouvelleCommande.BonLpdfPath);
+    }
+    formData.append('dte', nouvelleCommande.dte);
+    formData.append('numL', nouvelleCommande.numL);
+
+    try {
+      const response = await axios.post('http://localhost:8787/api/bonc/upload', formData, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        }
+      });
+      setCommandes(prev => [...prev, response.data]);
+      setNouvelleCommande({
+        idbc: 0,
+        numL: "",
+        dte: "",
+        BonCpdfPath: null,
+        BonLpdfPath: null,
+      });
       setFormVisible(false);
-      setNextId(nextId + 1);
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        const errorMessage = error.response?.data ? JSON.stringify(error.response.data) : 'Erreur lors de l\'ajout de la commande';
+        setErrorMessage(errorMessage);
+      } else {
+        setErrorMessage('Une erreur inattendue est survenue');
+      }
+      console.error('Erreur lors de l\'ajout de la commande !', error);
     }
   };
 
-  const handleSupprimerCommande = (id: number) => {
-    setCommandes(prev => prev.filter(commande => commande.id !== id));
-  };
-
-  const handleAfficherPDF = (fichier?: File) => {
-    if (fichier) {
-      const url = URL.createObjectURL(fichier);
-      window.open(url, '_blank');
+  const handleSupprimerCommande = async (idbc: number) => {
+    try {
+      await axios.delete(`http://localhost:8787/api/bonc/${idbc}`, {
+        headers: {
+          Authorization: `Bearer ${keycloak.token}`,
+        }
+      });
+      setCommandes(prev => prev.filter(commande => commande.idbc !== idbc));
+    } catch (error) {
+      console.error('Erreur lors de la suppression de la commande !', error);
     }
   };
 
-  const filteredCommandes = commandes.filter(commande => {
-    if (critereFiltrage === 'numero') {
-      return commande.numero.includes(valeurFiltre ? valeurFiltre.toISOString().split('T')[0] : "");
+  useEffect(() => {
+    const fetchCommandes = async () => {
+      try {
+        const response = await axios.get('http://localhost:8787/api/bonc/all', {
+          headers: {
+            Authorization: `Bearer ${keycloak.token}`,
+          }
+        });
+        setCommandes(response.data);
+      } catch (error) {
+        console.error('Erreur lors de la récupération des commandes !', error);
+      }
+    };
+
+    fetchCommandes();
+  }, []);
+
+  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString();
+
+  const handleAfficherBonCommande = (commande: Commande) => {
+    if (commande.BonCpdfPath) {
+      window.open(commande.BonCpdfPath, '_blank');
     }
-    if (critereFiltrage === 'date') {
-      const selectedDate = valeurFiltre?.toISOString().split('T')[0] || "";
-      const commandeDate = new Date(commande.date).toISOString().split('T')[0];
-      return commandeDate === selectedDate;
+  };
+
+  const handleAfficherBonLivraison = (commande: Commande) => {
+    if (commande.BonLpdfPath) {
+      window.open(commande.BonLpdfPath, '_blank');
     }
-    return true;
-  });
+  };
+
+  const handleModifierCommande = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commandeEnModification) return;
+
+    const formData = new FormData();
+    if (commandeEnModification.BonCpdfPath) {
+      formData.append('BonCpdfPath', commandeEnModification.BonCpdfPath);
+    }
+    if (commandeEnModification.BonLpdfPath) {
+      formData.append('BonLpdfPath', commandeEnModification.BonLpdfPath);
+    }
+    formData.append('numL', commandeEnModification.numL || "");
+    formData.append('dte', commandeEnModification.dte || "");
+
+    try {
+      await axios.put(`http://localhost:8787/api/bonc/${commandeEnModification.idbc}`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+          Authorization: `Bearer ${keycloak.token}`,
+        }
+      });
+      setCommandes(prev => prev.map(c => (c.idbc === commandeEnModification.idbc ? { ...commandeEnModification } : c)));
+      setCommandeEnModification(null);
+    } catch (error) {
+      console.error('Erreur lors de la modification de la commande !', error);
+    }
+  };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-4">Commandes</h1>
-
-      <div className="relative mb-4 flex justify-end">
-        <button
-          onClick={() => setFiltrageActif(prev => !prev)}
-          className="bg-gray-800 text-white p-2 rounded shadow-lg hover:bg-gray-900 transition"
-        >
-          <FaFilter />
-        </button>
-
-        {filtrageActif && (
-          <div className="absolute top-10 right-0 bg-white border border-gray-300 rounded shadow-lg p-4 z-10">
-            <h2 className="text-xl font-semibold mb-2">Filtrer les Commandes</h2>
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">Critère de filtrage :</label>
-              <select
-                value={critereFiltrage || ''}
-                onChange={(e) => setCritereFiltrage(e.target.value as 'numero' | 'date')}
-                className="border p-2 rounded w-full mt-1"
-              >
-                <option value="">Sélectionner un critère</option>
-                <option value="numero">Numéro</option>
-                <option value="date">Date</option>
-              </select>
-            </div>
-            {critereFiltrage === 'date' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700">Sélectionner une date :</label>
-                <DatePicker
-                  selected={valeurFiltre}
-                  onChange={(date: Date | null) => setValeurFiltre(date)}
-                  dateFormat="yyyy-MM-dd"
-                  className="border p-2 rounded w-full mt-1"
-                />
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
+    <div className="p-4">
       <button
-        onClick={() => setFormVisible(prev => !prev)}
-        className="fixed bottom-4 right-4 bg-blue-500 text-white p-3 rounded shadow-lg hover:bg-blue-600 transition"
+        onClick={() => setFormVisible(!formVisible)}
+        className="bg-blue-500 text-white p-2 rounded shadow-lg hover:bg-blue-600 transition"
       >
-        {formVisible ? "Fermer" : "+"}
+        {formVisible ? 'Annuler' : 'Ajouter Commande'}
       </button>
 
       {formVisible && (
-        <form onSubmit={handleAjouterCommande} className="p-4 border border-gray-300 rounded shadow-lg mb-4 bg-white">
-          <h2 className="text-xl font-semibold mb-4">Ajouter une Commande</h2>
+        <form onSubmit={handleAjouterCommande} className="mt-4">
           <div className="mb-4">
-            <label htmlFor="numero" className="block text-sm font-medium text-gray-700">Numéro de la commande :</label>
+            <label htmlFor="numL" className="block text-sm font-medium text-gray-700">Numéro de Commande</label>
             <input
               type="text"
-              id="numero"
-              name="numero"
-              value={nouvelleCommande.numero}
+              id="numL"
+              name="numL"
+              value={nouvelleCommande.numL}
               onChange={handleChange}
               className="border p-2 rounded w-full mt-1"
             />
-            {errors.numero && <p className="text-red-500 text-sm mt-1">{errors.numero}</p>}
+            {errors.numL && <p className="text-red-500 text-sm">{errors.numL}</p>}
           </div>
           <div className="mb-4">
-            <label htmlFor="date" className="block text-sm font-medium text-gray-700">Date de la commande :</label>
+            <label htmlFor="dte" className="block text-sm font-medium text-gray-700">Date de Commande</label>
             <input
               type="date"
-              id="date"
-              name="date"
-              value={nouvelleCommande.date}
+              id="dte"
+              name="dte"
+              value={nouvelleCommande.dte}
               onChange={handleChange}
               className="border p-2 rounded w-full mt-1"
             />
-            {errors.date && <p className="text-red-500 text-sm mt-1">{errors.date}</p>}
+            {errors.dte && <p className="text-red-500 text-sm">{errors.dte}</p>}
           </div>
           <div className="mb-4">
-            <label htmlFor="bonCommande" className="block text-sm font-medium text-gray-700">Importer un bon de commande (PDF) :</label>
+            <label htmlFor="BonCpdfPath" className="block text-sm font-medium text-gray-700">Bon de Commande PDF</label>
             <input
               type="file"
-              id="bonCommande"
-              name="bonCommande"
+              id="BonCpdfPath"
+              name="BonCpdfPath"
               accept=".pdf"
               onChange={handleChange}
               className="border p-2 rounded w-full mt-1"
             />
+            {errors.BonCpdfPath && <p className="text-red-500 text-sm">{errors.BonCpdfPath}</p>}
           </div>
           <div className="mb-4">
-            <label htmlFor="bonLivraison" className="block text-sm font-medium text-gray-700">Importer un bon de livraison (PDF) :</label>
+            <label htmlFor="BonLpdfPath" className="block text-sm font-medium text-gray-700">Bon de Livraison PDF</label>
             <input
               type="file"
-              id="bonLivraison"
-              name="bonLivraison"
+              id="BonLpdfPath"
+              name="BonLpdfPath"
               accept=".pdf"
               onChange={handleChange}
               className="border p-2 rounded w-full mt-1"
             />
+            {errors.BonLpdfPath && <p className="text-red-500 text-sm">{errors.BonLpdfPath}</p>}
           </div>
-          <button type="submit" className="bg-orange-500 text-white p-2 rounded hover:bg-orange-600 transition">Ajouter</button>
+          {errorMessage && <p className="text-red-500 text-sm">{errorMessage}</p>}
+          <button
+            type="submit"
+            className="bg-green-500 text-white p-2 rounded shadow-lg hover:bg-green-600 transition"
+          >
+            Ajouter
+          </button>
         </form>
       )}
 
-      {filteredCommandes.length > 0 ? (
-        <ul>
-          {filteredCommandes.map(commande => (
-            <li
-              key={commande.id}
-              className="flex justify-between items-center p-2 border-b border-gray-200 cursor-pointer"
-              onClick={() => handleAfficherPDF(commande.bonCommande)}
-            >
-              <span>{`Commande #${commande.numero} - Date: ${commande.date}`}</span>
-              <div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAfficherPDF(commande.bonCommande);
-                  }}
-                  className="bg-orange-500 text-white p-1 rounded hover:bg-orange-600 transition mx-1"
-                >
-                  Bon de commande
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleAfficherPDF(commande.bonLivraison);
-                  }}
-                  className="bg-blue-500 text-white p-1 rounded hover:bg-blue-600 transition mx-1"
-                >
-                  Bon de livraison
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleSupprimerCommande(commande.id);
-                  }}
-                  className="bg-gray-500 text-white p-1 rounded hover:bg-gray-600 transition mx-1"
-                >
-                  Supprimer
-                </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-500">Aucune commande correspondant aux critères de filtrage.</p>
+      {commandeEnModification && (
+        <form onSubmit={handleModifierCommande} className="mt-4">
+          <div className="mb-4">
+            <label htmlFor="numL" className="block text-sm font-medium text-gray-700">Numéro de Commande</label>
+            <input
+              type="text"
+              id="numL"
+              name="numL"
+              value={commandeEnModification.numL}
+              onChange={handleModifierChange}
+              className="border p-2 rounded w-full mt-1"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="dte" className="block text-sm font-medium text-gray-700">Date de Commande</label>
+            <input
+              type="date"
+              id="dte"
+              name="dte"
+              value={commandeEnModification.dte}
+              onChange={handleModifierChange}
+              className="border p-2 rounded w-full mt-1"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="BonCpdfPath" className="block text-sm font-medium text-gray-700">Bon de Commande PDF</label>
+            <input
+              type="file"
+              id="BonCpdfPath"
+              name="BonCpdfPath"
+              accept=".pdf"
+              onChange={handleModifierChange}
+              className="border p-2 rounded w-full mt-1"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="BonLpdfPath" className="block text-sm font-medium text-gray-700">Bon de Livraison PDF</label>
+            <input
+              type="file"
+              id="BonLpdfPath"
+              name="BonLpdfPath"
+              accept=".pdf"
+              onChange={handleModifierChange}
+              className="border p-2 rounded w-full mt-1"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-yellow-500 text-white p-2 rounded shadow-lg hover:bg-yellow-600 transition"
+          >
+            Modifier
+          </button>
+        </form>
       )}
+
+      <table className="mt-4 w-full">
+        <thead>
+          <tr>
+            <th className="border px-4 py-2">Numéro de Commande</th>
+            <th className="border px-4 py-2">Date de Commande</th>
+            <th className="border px-4 py-2">Bon de Commande</th>
+            <th className="border px-4 py-2">Bon de Livraison</th>
+            <th className="border px-4 py-2">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {commandes.map(commande => (
+            <tr key={commande.idbc}>
+              <td className="border px-4 py-2">{commande.numL}</td>
+              <td className="border px-4 py-2">{formatDate(commande.dte)}</td>
+              <td className="border px-4 py-2">
+                {commande.BonCpdfPath && (
+                  <button onClick={() => handleAfficherBonCommande(commande)} className="text-blue-500 underline">
+                    Voir PDF
+                  </button>
+                )}
+              </td>
+              <td className="border px-4 py-2">
+                {commande.BonLpdfPath && (
+                  <button onClick={() => handleAfficherBonLivraison(commande)} className="text-blue-500 underline">
+                    Voir PDF
+                  </button>
+                )}
+              </td>
+              <td className="border px-4 py-2">
+                <button onClick={() => setCommandeEnModification(commande)} className="text-yellow-500">
+                  <MdModeEdit />
+                </button>
+                <button onClick={() => handleSupprimerCommande(commande.idbc)} className="text-red-500 ml-2">
+                  <FontAwesomeIcon icon={faTrash} />
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

@@ -9,12 +9,16 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Date;
+
 @Entity @Data
 @AllArgsConstructor @NoArgsConstructor
 public class BonC {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idbc;
-    private String nomC;
     private String numL;
-    private String pdfPath;
+    private Date Dte;
+    private String BonCpdfPath;
+    private String BonLpdfPath;
+
 }
