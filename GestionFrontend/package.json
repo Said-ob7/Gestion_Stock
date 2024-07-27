@@ -16,6 +16,8 @@
     "axios": "^1.7.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
+    "exceljs": "^4.4.0",
+    "file-saver": "^2.0.5",
     "keycloak-js": "^25.0.1",
     "lucide-react": "^0.407.0",
     "prop-types": "^15.8.1",
@@ -23,13 +25,16 @@
     "react-dom": "^18.3.1",
     "react-dropzone": "^14.2.3",
     "react-icons": "^5.2.1",
+    "react-paginate": "^8.2.0",
     "react-router-dom": "^6.24.1",
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "xlsx": "^0.18.5"
+    "xlsx": "^0.18.5",
+    "xlsx-style": "^0.8.13"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
