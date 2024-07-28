@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "../ui/button";
-import { FaRegUser, FaPlus, FaSearch, FaFilter } from "react-icons/fa";
+import { FaRegUser, FaPlus } from "react-icons/fa";
 import { RiAdminLine } from "react-icons/ri";
 import { CiSearch, CiFilter } from "react-icons/ci";
 
@@ -20,11 +20,10 @@ interface User {
 const UsersList: React.FC = () => {
   const { keycloak } = useKeycloak();
   const [users, setUsers] = useState<User[]>([]);
-  const [clientUsers, setClientUsers] = useState<User[]>([]);
-  const [clientAdmins, setClientAdmins] = useState<User[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterDate, setFilterDate] = useState<string>("");
+  const [filterRole, setFilterRole] = useState<string>(""); // New state for role filtering
   const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
 
@@ -152,72 +151,55 @@ const UsersList: React.FC = () => {
       }
     };
 
-    const categorizeUsers = async (users: User[]) => {
-      const clientUsers: User[] = [];
-      const clientAdmins: User[] = [];
+    const updateUserRolesAndDetails = async (users: User[]) => {
       const currentUserId = keycloak.subject; // ID of the currently authenticated user
 
-      for (const user of users) {
-        if (user.id === currentUserId) continue; // Exclude the currently authenticated user
+      const updatedUsers = await Promise.all(
+        users.map(async (user) => {
+          if (user.id === currentUserId) return user; // Exclude the currently authenticated user
 
-        const roles = await fetchUserRoles(user.id);
-        const userDetails = await fetchUserDetails(user);
-        user.roles = roles;
-        user.createdAt = userDetails.createdAt;
-        user.matricule = userDetails.matricule;
+          const roles = await fetchUserRoles(user.id);
+          const userDetails = await fetchUserDetails(user);
+          return {
+            ...user,
+            roles,
+            createdAt: userDetails.createdAt,
+            matricule: userDetails.matricule,
+          };
+        })
+      );
 
-        if (roles.includes("client_admin")) {
-          clientAdmins.push(user);
-        } else {
-          clientUsers.push(user);
-        }
-      }
-
-      setClientUsers(clientUsers);
-      setClientAdmins(clientAdmins);
+      setUsers(updatedUsers);
     };
 
     if (users.length > 0) {
-      categorizeUsers(users);
+      updateUserRolesAndDetails(users);
     }
   }, [users, keycloak.token, clientId]);
 
-  const filteredUsers = clientUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.matricule?.includes(searchTerm.toLowerCase());
+      user.matricule?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDate = filterDate
       ? new Date(user.createdAt || 0).toDateString() ===
         new Date(filterDate).toDateString()
       : true;
-    return matchesSearch && matchesDate;
-  });
-
-  const filteredAdmins = clientAdmins.filter((user) => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.matricule?.includes(searchTerm.toLowerCase());
-    const matchesDate = filterDate
-      ? new Date(user.createdAt || 0).toDateString() ===
-        new Date(filterDate).toDateString()
-      : true;
-    return matchesSearch && matchesDate;
+    const matchesRole =
+      filterRole === "client_admin"
+        ? user.roles?.includes(filterRole)
+        : filterRole === "client_user"
+        ? !user.roles?.includes("client_admin")
+        : true;
+    return matchesSearch && matchesDate && matchesRole;
   });
 
   const handleSearchClick = () => {
-    if (showSearchModal) {
-      setShowSearchModal(false);
-    } else {
-      setShowSearchModal(true);
-    }
+    setShowSearchModal(!showSearchModal);
   };
 
   const handleFilterClick = () => {
-    if (showFilterModal) {
-      setShowFilterModal(false);
-    } else {
-      setShowFilterModal(true);
-    }
+    setShowFilterModal(!showFilterModal);
   };
 
   return (
@@ -239,9 +221,9 @@ const UsersList: React.FC = () => {
             />
           </div>
         </div>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-row items-center gap-4">
           {showSearchModal && (
-            <div className="">
+            <div>
               <input
                 type="text"
                 placeholder="Search by name or matricule"
@@ -252,13 +234,22 @@ const UsersList: React.FC = () => {
             </div>
           )}
           {showFilterModal && (
-            <div className="">
+            <div className="flex flex-row gap-4">
               <input
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
                 className="p-2 border border-gray-300 rounded-md mb-4 w-full"
               />
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md mb-4 w-full"
+              >
+                <option value="">All Roles</option>
+                <option value="client_user">User</option>
+                <option value="client_admin">Admin</option>
+              </select>
             </div>
           )}
         </div>
@@ -268,39 +259,26 @@ const UsersList: React.FC = () => {
               <Link to={`/users/${user.id}`}>
                 <div
                   style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14   flex flex-row items-center gap-[200px] rounded-md shadow"
+                  className="h-14 flex flex-row items-center  rounded-md shadow p-2"
                 >
-                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
-                    <FaRegUser className="ml-8 " />
-                    <p className="font-sans uppercase ">{user.matricule}</p>
+                  <div className="flex flex-row items-center gap-[100px]">
+                    <div className="flex flex-row items-center gap-4 w-[110px]">
+                      {user.roles?.includes("client_admin") ? (
+                        <RiAdminLine className="ml-8 h-6 w-6" />
+                      ) : (
+                        <FaRegUser className="ml-8" />
+                      )}
+                      <p className="font-sans uppercase">{user.matricule}</p>
+                    </div>
+                    <p className="uppercase font-extrabold w-[50px]">
+                      {user.username}
+                    </p>
+                    <p className="w-[200px]">{user.email}</p>
+                    <p className="uppercase font-bold">
+                      {user.roles?.includes("client_admin") ? "Admin" : "User"}
+                    </p>
                   </div>
-                  <p className="uppercase font-extrabold w-[50px]">
-                    {user.username}
-                  </p>
-                  <p>{user.email}</p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-
-        <h2 className="font-mono font-bold text-xl">Administrateurs :</h2>
-        <ul className="flex flex-col gap-4 mx-4 my-8">
-          {filteredAdmins.map((user) => (
-            <li key={user.id} className="w-[900px]">
-              <Link to={`/users/${user.id}`}>
-                <div
-                  style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14  flex flex-row items-center gap-[200px] rounded-md shadow"
-                >
-                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
-                    <RiAdminLine className="ml-8 h-6 w-6" />
-                    <p className="font-sans uppercase ">{user.matricule}</p>
-                  </div>
-                  <p className="uppercase font-extrabold w-[50px]">
-                    {user.username}
-                  </p>
-                  <p>{user.email}</p>
+                  <div className="flex flex-row items-center gap-4"></div>
                 </div>
               </Link>
             </li>

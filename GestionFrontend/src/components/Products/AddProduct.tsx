@@ -1,37 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "@/Api/api";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 
-// Define the Product type
-interface Product {
-  id?: number;
-  nserie: string;
-  type: string;
-  model: string;
+interface ProductType {
+  id: number;
+  name: string;
 }
 
 const AddProduct: React.FC = () => {
-  const [product, setProduct] = useState<Product>({
+  const [product, setProduct] = useState({
     nserie: "",
-    type: "",
     model: "",
+    productType: {
+      id: 0,
+    },
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+
+  useEffect(() => {
+    axios
+      .get("/Prod/types")
+      .then((response) => {
+        setProductTypes(response.data);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the product types!", error);
+      });
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
-    setProduct((prevProduct) => ({
-      ...prevProduct,
-      [name]: value,
-    }));
+    if (name === "productType.id") {
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        productType: { id: parseInt(value, 10) },
+      }));
+    } else {
+      setProduct((prevProduct) => ({
+        ...prevProduct,
+        [name]: value,
+      }));
+    }
   };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    // console.log("Submitting product:", product);
+    console.log("Submitting product:", product); // Add this line to log the product
     axios
       .post("/Prod/add", product)
       .then(() => {
+        console.log("Product added successfully");
         window.location.reload();
       })
       .catch((error) => {
@@ -54,12 +76,18 @@ const AddProduct: React.FC = () => {
         </div>
         <div>
           <label>Type:</label>
-          <Input
-            type="text"
-            name="type"
-            value={product.type}
+          <select
+            name="productType.id"
+            value={product.productType.id}
             onChange={handleChange}
-          />
+          >
+            <option value={0}>Select a Type</option>
+            {productTypes.map((type) => (
+              <option key={type.id} value={type.id}>
+                {type.name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label>Model:</label>

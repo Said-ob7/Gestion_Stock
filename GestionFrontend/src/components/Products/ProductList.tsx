@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "@/Api/api";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import ExcelJS from "exceljs";
 import { saveAs } from "file-saver";
@@ -14,12 +14,18 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { RiFileExcel2Line } from "react-icons/ri";
+import { FaPlus } from "react-icons/fa";
+
+interface ProductType {
+  id: number;
+  name: string;
+}
 
 interface Product {
   id: number;
   nserie: string;
-  type: string;
   model: string;
+  productType: ProductType | null;
 }
 
 const ProductList: React.FC = () => {
@@ -32,6 +38,7 @@ const ProductList: React.FC = () => {
   const [filters, setFilters] = useState({ nserie: "", type: "", model: "" });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const navigate = useNavigate();
 
   useEffect(() => {
     axios
@@ -48,17 +55,19 @@ const ProductList: React.FC = () => {
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFilters((prevFilters) => {
-      const newFilters = { ...prevFilters, [name]: value };
+      const newFilters = { ...prevFilters, [name]: value.toLowerCase() };
 
       const newFilteredProducts = products.filter(
         (product) =>
-          product.nserie.includes(newFilters.nserie) &&
-          product.type.includes(newFilters.type) &&
-          product.model.includes(newFilters.model)
+          product.nserie.toLowerCase().includes(newFilters.nserie) &&
+          (product.productType?.name.toLowerCase() || "").includes(
+            newFilters.type
+          ) &&
+          product.model.toLowerCase().includes(newFilters.model)
       );
 
       setFilteredProducts(newFilteredProducts);
-      setCurrentPage(1); // Reset to first page on filter change
+      setCurrentPage(1);
       return newFilters;
     });
   };
@@ -88,6 +97,27 @@ const ProductList: React.FC = () => {
       }
       return newSelectAll;
     });
+  };
+
+  const handleDeleteProduct = (id: number) => {
+    axios
+      .delete(`/Prod/${id}`)
+      .then(() => {
+        setProducts((prevProducts) =>
+          prevProducts.filter((product) => product.id !== id)
+        );
+        setFilteredProducts((prevProducts) =>
+          prevProducts.filter((product) => product.id !== id)
+        );
+        setSelectedProducts((prevSelected) => {
+          const newSelected = new Set(prevSelected);
+          newSelected.delete(id);
+          return newSelected;
+        });
+      })
+      .catch((error) => {
+        console.error("There was an error deleting the product!", error);
+      });
   };
 
   const exportToExcel = async () => {
@@ -132,12 +162,12 @@ const ProductList: React.FC = () => {
           "",
           "",
           "",
-          "",
+          product.productType?.name || "",
           product.model,
           product.nserie,
           "",
           "",
-          product.type,
+          product.productType?.name || "",
           "",
           "",
         ]);
@@ -166,7 +196,7 @@ const ProductList: React.FC = () => {
     <div className="p-4">
       <h2 className="text-2xl font-bold mb-4">Product List</h2>
 
-      <div className="mb-4">
+      <div className="mb-4 flex items-center">
         <input
           type="text"
           name="nserie"
@@ -191,7 +221,11 @@ const ProductList: React.FC = () => {
           placeholder="Filter by Model"
           className="p-2 border rounded"
         />
-        <Button onClick={exportToExcel} variant="outline" className="mr-2">
+        <Button
+          onClick={exportToExcel}
+          variant="outline"
+          className="ml-2 bg-emerald-400 hover:bg-emerald-300"
+        >
           <RiFileExcel2Line />
         </Button>
       </div>
@@ -209,9 +243,10 @@ const ProductList: React.FC = () => {
                 />
               </th>
               <th className="py-2 px-4 border-r border-b">ID</th>
-              <th className="py-2 px-4 border-r border-b">Serial Number</th>
+              <th className="py-2 px-4 border-r border-b">N Serie</th>
               <th className="py-2 px-4 border-r border-b">Type</th>
-              <th className="py-2 px-4 border-b">Model</th>
+              <th className="py-2 px-4 border-r border-b">Model</th>
+              <th className="py-2 px-4 border-b">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -229,8 +264,25 @@ const ProductList: React.FC = () => {
                 <td className="py-2 px-4 border-r border-b">
                   {product.nserie}
                 </td>
-                <td className="py-2 px-4 border-r border-b">{product.type}</td>
-                <td className="py-2 px-4 border-b">{product.model}</td>
+                <td className="py-2 px-4 border-r border-b">
+                  {product.productType?.name || "N/A"}
+                </td>
+                <td className="py-2 px-4 border-r border-b">{product.model}</td>
+                <td className="py-2 px-4 border-b">
+                  <Button
+                    onClick={() => navigate(`/products/${product.id}`)}
+                    variant="outline"
+                    className="mr-2"
+                  >
+                    Details
+                  </Button>
+                  <Button
+                    onClick={() => handleDeleteProduct(product.id)}
+                    variant="outline"
+                  >
+                    Delete
+                  </Button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -271,8 +323,10 @@ const ProductList: React.FC = () => {
       </div>
 
       <div className="mt-4 flex">
-        <Link to={"/products/new"}>
-          <Button>Add New Product</Button>
+        <Link className="fixed bottom-14 right-14" to={"/products/new"}>
+          <Button className="bg-orange-600 hover:bg-orange-500">
+            <FaPlus />
+          </Button>
         </Link>
       </div>
     </div>
