@@ -37,7 +37,7 @@ const ProductList: React.FC = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [filters, setFilters] = useState({ nserie: "", type: "", model: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const itemsPerPage = 9;
   const navigate = useNavigate();
 
   useEffect(() => {

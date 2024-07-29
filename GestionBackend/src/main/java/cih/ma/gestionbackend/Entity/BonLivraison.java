@@ -21,5 +21,7 @@ public class BonLivraison {
     @Column(columnDefinition="BLOB")
     private byte[] data;
 
+//    private String N_BC;
+
 
 }

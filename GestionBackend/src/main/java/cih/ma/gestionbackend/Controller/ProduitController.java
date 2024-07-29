@@ -7,6 +7,7 @@ import cih.ma.gestionbackend.Repository.ProductTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +22,9 @@ public class ProduitController {
 
     @Autowired
     private ProductTypeRepository productTypeRepository;
+
+    @Autowired
+    private SimpMessagingTemplate template;
 
     @GetMapping
     public ResponseEntity<List<Produit>> getAllProducts() {
@@ -46,6 +50,7 @@ public class ProduitController {
         produit.setProductType(productType);
 
         Produit newProduit = produitRepository.save(produit);
+        template.convertAndSend("/topic/products", "New product added: " + produit.getNserie());
         return new ResponseEntity<>(newProduit, HttpStatus.CREATED);
     }
 
@@ -85,5 +90,4 @@ public class ProduitController {
         produitRepository.delete(produit);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-
 }

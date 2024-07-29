@@ -1,6 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useKeycloak } from "@react-keycloak/web";
+import { Button } from "../ui/button";
+import { FaRegFilePdf } from "react-icons/fa6";
+import { Link } from "react-router-dom";
+import { FaPlus } from "react-icons/fa";
 
 interface Commande {
   id: number;
@@ -9,17 +13,9 @@ interface Commande {
 
 const CommandeList: React.FC = () => {
   const { keycloak } = useKeycloak();
-
   const [commandes, setCommandes] = useState<Commande[]>([]);
-  const [selectedBonCommande, setSelectedBonCommande] = useState<string | null>(
-    null
-  );
-  const [selectedBonLivraison, setSelectedBonLivraison] = useState<
-    string | null
-  >(null);
 
   useEffect(() => {
-    // Fetch the list of Commandes (you need to implement this endpoint in the backend)
     const fetchCommandes = async () => {
       try {
         const response = await axios.get<Commande[]>(
@@ -51,7 +47,7 @@ const CommandeList: React.FC = () => {
         }
       );
       const fileURL = URL.createObjectURL(response.data);
-      setSelectedBonCommande(fileURL);
+      window.open(fileURL, "_blank");
     } catch (error) {
       console.error("Error viewing BonCommande:", error);
     }
@@ -69,7 +65,7 @@ const CommandeList: React.FC = () => {
         }
       );
       const fileURL = URL.createObjectURL(response.data);
-      setSelectedBonLivraison(fileURL);
+      window.open(fileURL, "_blank");
     } catch (error) {
       console.error("Error viewing BonLivraison:", error);
     }
@@ -77,35 +73,34 @@ const CommandeList: React.FC = () => {
 
   return (
     <div>
-      <ul>
+      <ul className="mb-8">
         {commandes.map((commande) => (
-          <li key={commande.id}>
+          <li className="flex flex-col gap-4" key={commande.id}>
             {commande.description}
-            <button onClick={() => handleViewBonCommande(commande.id)}>
-              View BonCommande
-            </button>
-            <button onClick={() => handleViewBonLivraison(commande.id)}>
-              View BonLivraison
-            </button>
+            <div className="flex flex-row gap-4">
+              <Button
+                className="flex flex-row gap-4 bg-red-600 hover:bg-red-500"
+                onClick={() => handleViewBonCommande(commande.id)}
+              >
+                <FaRegFilePdf />
+                BonCommande
+              </Button>
+              <Button
+                className="flex flex-row gap-4 bg-red-600 hover:bg-red-500"
+                onClick={() => handleViewBonLivraison(commande.id)}
+              >
+                <FaRegFilePdf />
+                BonLivraison
+              </Button>
+            </div>
           </li>
         ))}
       </ul>
-      {selectedBonCommande && (
-        <iframe
-          src={selectedBonCommande}
-          width="100%"
-          height="500px"
-          title="BonCommande Viewer"
-        ></iframe>
-      )}
-      {selectedBonLivraison && (
-        <iframe
-          src={selectedBonLivraison}
-          width="100%"
-          height="500px"
-          title="BonLivraison Viewer"
-        ></iframe>
-      )}
+      <Link className="fixed bottom-14 right-14" to={"/orders/upload"}>
+        <Button className="bg-orange-600 hover:bg-orange-500">
+          <FaPlus />
+        </Button>
+      </Link>
     </div>
   );
 };

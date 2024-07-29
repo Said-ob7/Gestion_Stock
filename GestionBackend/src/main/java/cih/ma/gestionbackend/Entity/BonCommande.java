@@ -20,4 +20,6 @@ public class BonCommande {
     @Lob
     @Column(columnDefinition="BLOB")
     private byte[] data;
+
+//    private String N_BL;
 }

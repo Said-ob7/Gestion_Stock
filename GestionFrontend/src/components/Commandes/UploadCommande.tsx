@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useKeycloak } from "@react-keycloak/web";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 
-const UploadForm: React.FC = () => {
+const UploadCommande: React.FC = () => {
   const { keycloak } = useKeycloak();
-
   const [description, setDescription] = useState<string>("");
   const [bonCommandeFile, setBonCommandeFile] = useState<File | null>(null);
   const [bonLivraisonFile, setBonLivraisonFile] = useState<File | null>(null);
@@ -41,6 +42,7 @@ const UploadForm: React.FC = () => {
         }
       );
       alert(response.data);
+      window.location.reload();
     } catch (error) {
       console.error("Error uploading commande:", error);
       alert("Failed to upload commande");
@@ -49,25 +51,28 @@ const UploadForm: React.FC = () => {
 
   return (
     <form onSubmit={handleSubmit}>
-      <input
-        type="text"
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Description"
-      />
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => handleFileChange(e, setBonCommandeFile)}
-      />
-      <input
-        type="file"
-        accept="application/pdf"
-        onChange={(e) => handleFileChange(e, setBonLivraisonFile)}
-      />
-      <button type="submit">Upload</button>
+      <h2>Ajouter une Commande :</h2>
+      <div className="flex flex-col gap-8 w-[700px] my-4">
+        <Input
+          type="text"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          placeholder="Description"
+        />
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => handleFileChange(e, setBonCommandeFile)}
+        />
+        <input
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => handleFileChange(e, setBonLivraisonFile)}
+        />
+      </div>
+      <Button type="submit">Upload</Button>
     </form>
   );
 };
 
-export default UploadForm;
+export default UploadCommande;

@@ -206,8 +206,7 @@ const UsersList: React.FC = () => {
     <>
       <div>
         <div className="flex justify-between items-center mb-4">
-          <h2 className="font-mono font-bold text-xl">Utilisateurs :</h2>
-          <div className="flex gap-4">
+          <div className="flex gap-4 fixed  right-14">
             <CiSearch
               onClick={handleSearchClick}
               className="cursor-pointer"
@@ -253,27 +252,29 @@ const UsersList: React.FC = () => {
             </div>
           )}
         </div>
-        <ul className="flex flex-col gap-4 mx-4 my-8">
+        <ul className="flex flex-col gap-4 mx-4 my-8 ">
           {filteredUsers.map((user) => (
-            <li key={user.id} className="w-[900px]">
+            <li key={user.id} className="w-[600px] ">
               <Link to={`/users/${user.id}`}>
                 <div
                   style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14 flex flex-row items-center  rounded-md shadow p-2"
+                  className="h-20 flex flex-row items-center  rounded-md shadow p-2"
                 >
                   <div className="flex flex-row items-center gap-[100px]">
-                    <div className="flex flex-row items-center gap-4 w-[110px]">
-                      {user.roles?.includes("client_admin") ? (
-                        <RiAdminLine className="ml-8 h-6 w-6" />
-                      ) : (
-                        <FaRegUser className="ml-8" />
-                      )}
-                      <p className="font-sans uppercase">{user.matricule}</p>
+                    <div className="flex flex-col gap-2 ml-8 w-[200px]">
+                      <div className="flex flex-row items-center gap-4 ">
+                        {user.roles?.includes("client_admin") ? (
+                          <RiAdminLine className=" h-6 w-6" />
+                        ) : (
+                          <FaRegUser className="" />
+                        )}
+                        <p className="font-sans uppercase">{user.matricule}</p>
+                      </div>
+                      <p className="">{user.email}</p>
                     </div>
                     <p className="uppercase font-extrabold w-[50px]">
                       {user.username}
                     </p>
-                    <p className="w-[200px]">{user.email}</p>
                     <p className="uppercase font-bold">
                       {user.roles?.includes("client_admin") ? "Admin" : "User"}
                     </p>

@@ -11,13 +11,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CIH from "@/assets/CIH.svg";
 import Dashboard from "@/components/Dashboard";
 import Products from "@/components/Products/Produits";
-import Orders from "@/components/Commandes";
+import Orders from "@/components/Commandes/Commandes";
 import Assignment from "@/components/Affectation";
 import Settings from "@/components/Settings";
 import Users from "@/components/Users/Users";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "@/components/ui/button";
 import av from "@/assets/avatar.png";
+import { io } from "socket.io-client";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Home: React.FC = () => {
   const location = useLocation();
@@ -25,7 +28,8 @@ const Home: React.FC = () => {
 
   const [username, setUsername] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(av); // Default avatar
-  console.log(av);
+  const [notifications, setNotifications] = useState<number>(0);
+
   useEffect(() => {
     if (keycloak.tokenParsed) {
       const {
@@ -50,6 +54,29 @@ const Home: React.FC = () => {
       localStorage.setItem("email", email || "");
     }
   }, [keycloak.tokenParsed]);
+
+  // useEffect(() => {
+  //   if (keycloak.token) {
+  //     const socket = io("http://localhost:8787/ws", {
+  //       extraHeaders: {
+  //         Authorization: `Bearer ${keycloak.token}`,
+  //       },
+  //     });
+
+  //     socket.on("connect", () => {
+  //       console.log("Connected to WebSocket server");
+  //     });
+
+  //     socket.on("products", (message) => {
+  //       toast.info(message);
+  //       setNotifications((prev) => prev + 1); // Increment notification count
+  //     });
+
+  //     return () => {
+  //       socket.disconnect();
+  //     };
+  //   }
+  // }, [keycloak.token]);
 
   const logout = () => {
     keycloak.logout();
@@ -135,8 +162,14 @@ const Home: React.FC = () => {
           <div className="Navbar h-32 flex flex-row items-center justify-between px-10 ">
             <h1 className="text-3xl font-extrabold uppercase">{getTitle()}</h1>
             <div className="flex flex-row items-center gap-6">
-              {/* <CiSearch className="cursor-pointer text-2xl " /> */}
-              <FaRegBell className="cursor-pointer text-2xl" />
+              <div className="relative">
+                <FaRegBell className="cursor-pointer text-2xl" />
+                {notifications > 0 && (
+                  <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
+                    {notifications}
+                  </span>
+                )}
+              </div>
               <p className="uppercase ">{username}</p>
               <Link to={"/settings"}>
                 <Avatar className="cursor-pointer">
@@ -156,7 +189,7 @@ const Home: React.FC = () => {
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products/*" element={<Products />} />
-              <Route path="/orders" element={<Orders />} />
+              <Route path="/orders/*" element={<Orders />} />
               <Route path="/assignment" element={<Assignment />} />
               {isAdmin && <Route path="/users/*" element={<Users />} />}
               <Route path="/settings" element={<Settings />} />
@@ -164,6 +197,7 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
+      {/* <ToastContainer /> */}
     </>
   );
 };
