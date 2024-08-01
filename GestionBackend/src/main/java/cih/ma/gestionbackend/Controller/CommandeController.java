@@ -26,9 +26,12 @@ public class CommandeController {
     public ResponseEntity<String> uploadCommande(
             @RequestParam("description") String description,
             @RequestParam("bonCommande") MultipartFile bonCommandeFile,
-            @RequestParam("bonLivraison") MultipartFile bonLivraisonFile) {
+            @RequestParam("bonLivraison") MultipartFile bonLivraisonFile,
+            @RequestParam("N_BC") String nBc, // New field
+            @RequestParam("N_BL") String nBl // New field
+    ) {
         try {
-            Commande commande = commandeService.saveCommande(description, bonCommandeFile, bonLivraisonFile);
+            Commande commande = commandeService.saveCommande(description, bonCommandeFile, bonLivraisonFile, nBc, nBl);
             return ResponseEntity.ok("Commande uploaded successfully: " + commande.getId());
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to upload commande");
@@ -44,6 +47,7 @@ public class CommandeController {
     @GetMapping("/view/{id}")
     public ResponseEntity<Commande> viewCommande(@PathVariable Long id) {
         Optional<Commande> commandeOptional = commandeService.getCommande(id);
+        System.out.println(commandeOptional);
         return commandeOptional.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(404).body(null));
     }
@@ -75,4 +79,31 @@ public class CommandeController {
             return ResponseEntity.status(404).body(null);
         }
     }
+
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Commande> updateCommande(@PathVariable Long id, @RequestBody Commande updatedCommande) {
+        Optional<Commande> existingCommande = commandeService.getCommande(id);
+        if (existingCommande.isPresent()) {
+            Commande commande = existingCommande.get();
+            commande.setDescription(updatedCommande.getDescription());
+            commande.getBonCommande().setN_BC(updatedCommande.getBonCommande().getN_BC());
+            commande.getBonLivraison().setN_BL(updatedCommande.getBonLivraison().getN_BL());
+            Commande savedCommande = commandeService.save(commande);
+            return ResponseEntity.ok(savedCommande);
+        } else {
+            return ResponseEntity.status(404).body(null);
+        }
+    }
+
+    @DeleteMapping("/delete/{id}")
+    public ResponseEntity<String> deleteCommande(@PathVariable Long id) {
+        Optional<Commande> existingCommande = commandeService.getCommande(id);
+        if (existingCommande.isPresent()) {
+            commandeService.deleteCommande(id);
+            return ResponseEntity.ok("Commande deleted successfully");
+        } else {
+            return ResponseEntity.status(404).body("Commande not found");
+        }
+    }
+
 }

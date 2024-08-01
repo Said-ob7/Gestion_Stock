@@ -27,6 +27,7 @@ const Home: React.FC = () => {
   const { keycloak } = useKeycloak();
 
   const [username, setUsername] = useState("");
+  const [matricule, setMatricule] = useState("");
   const [avatarUrl, setAvatarUrl] = useState(av); // Default avatar
   const [notifications, setNotifications] = useState<number>(0);
 
@@ -39,10 +40,12 @@ const Home: React.FC = () => {
         family_name,
         email,
         profile,
+        matricule,
       } = keycloak.tokenParsed;
 
       console.log("Token Parsed:", keycloak.tokenParsed); // Debugging
 
+      setMatricule(matricule);
       setUsername(preferred_username);
       setAvatarUrl(profile || av); // Set avatar URL
 
@@ -94,8 +97,11 @@ const Home: React.FC = () => {
       case "/dashboard":
         return "Dashboard";
       case "/products":
+      case "/products/new":
         return "Produits";
       case "/orders":
+      case "/orders/upload":
+      case `/orders/${location.pathname.split("/")[2]}`:
         return "Commandes";
       case "/assignment":
         return "Affectation";
@@ -170,7 +176,7 @@ const Home: React.FC = () => {
                   </span>
                 )}
               </div>
-              <p className="uppercase ">{username}</p>
+              <p className="uppercase font-bold">{matricule}</p>
               <Link to={"/settings"}>
                 <Avatar className="cursor-pointer">
                   <AvatarImage
@@ -197,7 +203,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-      {/* <ToastContainer /> */}
     </>
   );
 };

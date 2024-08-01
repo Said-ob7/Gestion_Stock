@@ -18,13 +18,24 @@ public class CommandeService {
     @Autowired
     private CommandeRepository commandeRepository;
 
-    public Commande saveCommande(String description, MultipartFile bonCommandeFile, MultipartFile bonLivraisonFile) throws IOException {
+    // Method to save or update a Commande
+    public Commande save(Commande commande) {
+        return commandeRepository.save(commande);
+    }
+
+    public void deleteCommande(Long id) {
+        commandeRepository.deleteById(id);
+    }
+
+    public Commande saveCommande(String description, MultipartFile bonCommandeFile, MultipartFile bonLivraisonFile, String nBc, String nBl) throws IOException {
         BonCommande bonCommande = new BonCommande();
         bonCommande.setFileName(bonCommandeFile.getOriginalFilename());
+        bonCommande.setN_BC(nBc); // Set the N_BC value
         bonCommande.setData(bonCommandeFile.getBytes());
 
         BonLivraison bonLivraison = new BonLivraison();
         bonLivraison.setFileName(bonLivraisonFile.getOriginalFilename());
+        bonLivraison.setN_BL(nBl); // Set the N_BL value
         bonLivraison.setData(bonLivraisonFile.getBytes());
 
         Commande commande = new Commande();

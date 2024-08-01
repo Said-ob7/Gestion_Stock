@@ -167,10 +167,10 @@ const Settings: React.FC = () => {
   return (
     <>
       <div className="flex flex-row items-center gap-[4px] my-4">
-        <Link to={"/profile"}>
+        <Link to={"/dashboard"}>
           <IoIosArrowBack />
         </Link>
-        <Link to={"/profile"}>Retour</Link>
+        <Link to={"/dashboard"}>Retour</Link>
       </div>
       <div className="w-[700px] mx-14">
         <h2 className="text-xl font-bold">Settings</h2>

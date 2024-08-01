@@ -21,5 +21,5 @@ public class BonCommande {
     @Column(columnDefinition="BLOB")
     private byte[] data;
 
-//    private String N_BL;
+    private String N_BC;
 }

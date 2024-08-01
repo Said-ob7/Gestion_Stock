@@ -8,7 +8,9 @@ const UploadCommande: React.FC = () => {
   const { keycloak } = useKeycloak();
   const [description, setDescription] = useState<string>("");
   const [bonCommandeFile, setBonCommandeFile] = useState<File | null>(null);
+  const [nBC, setNBC] = useState<string>(""); // New state for N_BC
   const [bonLivraisonFile, setBonLivraisonFile] = useState<File | null>(null);
+  const [nBL, setNBL] = useState<string>(""); // New state for N_BL
 
   const handleFileChange = (
     e: React.ChangeEvent<HTMLInputElement>,
@@ -26,9 +28,11 @@ const UploadCommande: React.FC = () => {
     if (bonCommandeFile) {
       formData.append("bonCommande", bonCommandeFile);
     }
+    formData.append("N_BC", nBC); // Ensure the key matches the backend
     if (bonLivraisonFile) {
       formData.append("bonLivraison", bonLivraisonFile);
     }
+    formData.append("N_BL", nBL); // Ensure the key matches the backend
 
     try {
       const response = await axios.post(
@@ -59,10 +63,22 @@ const UploadCommande: React.FC = () => {
           onChange={(e) => setDescription(e.target.value)}
           placeholder="Description"
         />
+        <Input
+          type="text"
+          value={nBC}
+          onChange={(e) => setNBC(e.target.value)}
+          placeholder="N_BC"
+        />
         <input
           type="file"
           accept="application/pdf"
           onChange={(e) => handleFileChange(e, setBonCommandeFile)}
+        />
+        <Input
+          type="text"
+          value={nBL}
+          onChange={(e) => setNBL(e.target.value)}
+          placeholder="N_BL"
         />
         <input
           type="file"

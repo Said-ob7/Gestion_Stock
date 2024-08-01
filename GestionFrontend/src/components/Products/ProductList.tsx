@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/pagination";
 import { RiFileExcel2Line } from "react-icons/ri";
 import { FaPlus } from "react-icons/fa";
+import { Input } from "../ui/input";
 
 interface ProductType {
   id: number;
@@ -37,7 +38,7 @@ const ProductList: React.FC = () => {
   const [selectAll, setSelectAll] = useState(false);
   const [filters, setFilters] = useState({ nserie: "", type: "", model: "" });
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 9;
+  const itemsPerPage = 8;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -193,11 +194,9 @@ const ProductList: React.FC = () => {
   );
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Product List</h2>
-
-      <div className="mb-4 flex items-center">
-        <input
+    <div className="">
+      <div className="mb-2 flex items-center">
+        <Input
           type="text"
           name="nserie"
           value={filters.nserie}
@@ -205,7 +204,7 @@ const ProductList: React.FC = () => {
           placeholder="Filter by Serial Number"
           className="mr-2 p-2 border rounded"
         />
-        <input
+        <Input
           type="text"
           name="type"
           value={filters.type}
@@ -213,7 +212,7 @@ const ProductList: React.FC = () => {
           placeholder="Filter by Type"
           className="mr-2 p-2 border rounded"
         />
-        <input
+        <Input
           type="text"
           name="model"
           value={filters.model}
@@ -226,7 +225,7 @@ const ProductList: React.FC = () => {
           variant="outline"
           className="ml-2 bg-emerald-400 hover:bg-emerald-300"
         >
-          <RiFileExcel2Line />
+          <RiFileExcel2Line className="font-bold" />
         </Button>
       </div>
 

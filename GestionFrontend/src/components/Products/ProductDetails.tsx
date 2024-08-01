@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom";
 import axios from "@/Api/api";
 import { Button } from "../ui/button";
+import { Input } from "../ui/input";
+import { IoIosArrowBack } from "react-icons/io";
 
 interface ProductType {
   id: number;
@@ -68,50 +70,63 @@ const ProductDetail: React.FC = () => {
   }
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">Product Detail</h2>
-      <div className="mb-4">
-        <label className="block mb-2">Serial Number</label>
-        <input
-          type="text"
-          name="nserie"
-          value={product.nserie}
-          onChange={handleChange}
-          className="p-2 border rounded"
-        />
+    <>
+      <div className="flex flex-row items-center gap-[4px] my-4">
+        <Link className="" to={"/products"}>
+          <IoIosArrowBack />
+        </Link>
+        <Link className="" to={"/products"}>
+          Retour
+        </Link>
       </div>
-      <div className="mb-4">
-        <label className="block mb-2">Model</label>
-        <input
-          type="text"
-          name="model"
-          value={product.model}
-          onChange={handleChange}
-          className="p-2 border rounded"
-        />
+      <h2 className="text-2xl font-bold mb-4 mx-8">Product Detail</h2>
+      <div className="p-4 mx-14 w-[700px]">
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold mb-2 w-[150px]"> N Serie :</label>
+          <Input
+            type="text"
+            name="nserie"
+            value={product.nserie}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block mb-2 font-bold  w-[150px]">Model :</label>
+          <Input
+            type="text"
+            name="model"
+            value={product.model}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block mb-2 font-bold w-[150px]">
+            Type de Produit :
+          </label>
+          <Input
+            type="text"
+            name="productType"
+            value={product.productType?.name || ""}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="flex justify-end mt-14">
+          <Button onClick={handleSave} className="mr-2">
+            Save
+          </Button>
+          <Button
+            onClick={handleDelete}
+            variant="outline"
+            className="mr-2 bg-red-700 hover:bg-red-600 hover:text-white text-white "
+          >
+            Delete
+          </Button>
+        </div>
       </div>
-      <div className="mb-4">
-        <label className="block mb-2">Product Type</label>
-        <input
-          type="text"
-          name="productType"
-          value={product.productType?.name || ""}
-          onChange={handleChange}
-          className="p-2 border rounded"
-        />
-      </div>
-      <div className="flex">
-        <Button onClick={handleSave} variant="outline" className="mr-2">
-          Save
-        </Button>
-        <Button onClick={handleDelete} variant="outline" className="mr-2">
-          Delete
-        </Button>
-        <Button onClick={() => navigate("/products")} variant="outline">
-          Cancel
-        </Button>
-      </div>
-    </div>
+    </>
   );
 };
 
