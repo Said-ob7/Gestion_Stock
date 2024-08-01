@@ -87,7 +87,7 @@ const CommandeList: React.FC = () => {
       <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {commandes.map((commande) => (
           <Link to={`/orders/${commande.id}`} key={commande.id}>
-            <div className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300 h-[250px] flex flex-col justify-between">
+            <div className="bg-white p-4 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300 h-[250px] flex flex-col justify-between border-black">
               <div className="mb-4">
                 <h3 className="text-lg font-semibold mb-2">
                   Commande #{commande.id}

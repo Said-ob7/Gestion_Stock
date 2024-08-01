@@ -271,13 +271,14 @@ const ProductList: React.FC = () => {
                   <Button
                     onClick={() => navigate(`/products/${product.id}`)}
                     variant="outline"
-                    className="mr-2"
+                    className="mr-2 border-black"
                   >
                     Details
                   </Button>
                   <Button
+                    className=""
                     onClick={() => handleDeleteProduct(product.id)}
-                    variant="outline"
+                    variant="destructive"
                   >
                     Delete
                   </Button>

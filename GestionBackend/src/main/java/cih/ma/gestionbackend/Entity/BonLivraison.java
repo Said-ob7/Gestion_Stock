@@ -18,7 +18,7 @@ public class BonLivraison {
     private String fileName;
 
     @Lob
-    @Column(columnDefinition="BLOB")
+    @Column(columnDefinition="LONGBLOB")
     private byte[] data;
 
 

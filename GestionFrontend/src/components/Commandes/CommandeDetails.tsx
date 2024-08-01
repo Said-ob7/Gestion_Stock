@@ -147,17 +147,15 @@ const CommandeDetails: React.FC = () => {
               </div>
             </div>
           </div>
-          <div className="flex justify-end mt-6 space-x-4">
+          <div className="flex justify-end mt-6 space-x-4 ">
             <Button
               onClick={handleUpdate}
-              className="bg-blue-600 hover:bg-blue-500"
+              variant="outline"
+              className="border-black"
             >
               Update
             </Button>
-            <Button
-              onClick={handleDelete}
-              className="bg-red-700 hover:bg-red-600"
-            >
+            <Button onClick={handleDelete} variant="destructive">
               Delete
             </Button>
           </div>

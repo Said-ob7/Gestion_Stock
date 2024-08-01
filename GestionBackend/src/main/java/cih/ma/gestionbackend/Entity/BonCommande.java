@@ -18,7 +18,7 @@ public class BonCommande {
     private String fileName;
 
     @Lob
-    @Column(columnDefinition="BLOB")
+    @Column(columnDefinition="LONGBLOB")
     private byte[] data;
 
     private String N_BC;
