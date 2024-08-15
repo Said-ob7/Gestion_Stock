@@ -13,6 +13,7 @@ interface BonCommande {
 interface BonLivraison {
   id: number;
   n_BL: string;
+  dateLivraison: string;
 }
 
 interface Commande {
@@ -40,7 +41,16 @@ const CommandeDetails: React.FC = () => {
             },
           }
         );
-        setCommande(response.data);
+        const fetchedCommande = response.data;
+        // Ensure the date is in the correct format
+        if (fetchedCommande.bonLivraison.dateLivraison) {
+          fetchedCommande.bonLivraison.dateLivraison = new Date(
+            fetchedCommande.bonLivraison.dateLivraison
+          )
+            .toISOString()
+            .split("T")[0];
+        }
+        setCommande(fetchedCommande);
         setIsLoading(false);
       } catch (error) {
         console.error("Error fetching commande:", error);
@@ -140,6 +150,25 @@ const CommandeDetails: React.FC = () => {
                       bonLivraison: {
                         ...commande.bonLivraison,
                         n_BL: e.target.value,
+                      },
+                    })
+                  }
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Date de Livraison:
+                </label>
+                <Input
+                  className="w-[500px]"
+                  type="date"
+                  value={commande.bonLivraison.dateLivraison}
+                  onChange={(e) =>
+                    setCommande({
+                      ...commande,
+                      bonLivraison: {
+                        ...commande.bonLivraison,
+                        dateLivraison: e.target.value,
                       },
                     })
                   }

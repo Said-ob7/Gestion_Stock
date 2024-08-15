@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,7 +28,7 @@ public class CommandeService {
         commandeRepository.deleteById(id);
     }
 
-    public Commande saveCommande(String description, MultipartFile bonCommandeFile, MultipartFile bonLivraisonFile, String nBc, String nBl) throws IOException {
+    public Commande saveCommande(String description, MultipartFile bonCommandeFile, MultipartFile bonLivraisonFile, String nBc, String nBl, Date dateLivraison) throws IOException {
         BonCommande bonCommande = new BonCommande();
         bonCommande.setFileName(bonCommandeFile.getOriginalFilename());
         bonCommande.setN_BC(nBc); // Set the N_BC value
@@ -37,6 +38,7 @@ public class CommandeService {
         bonLivraison.setFileName(bonLivraisonFile.getOriginalFilename());
         bonLivraison.setN_BL(nBl); // Set the N_BL value
         bonLivraison.setData(bonLivraisonFile.getBytes());
+        bonLivraison.setDateLivraison(dateLivraison);
 
         Commande commande = new Commande();
         commande.setDescription(description);

@@ -5,6 +5,7 @@ import cih.ma.gestionbackend.Entity.BonLivraison;
 import cih.ma.gestionbackend.Entity.Commande;
 import cih.ma.gestionbackend.Services.CommandeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -27,11 +29,13 @@ public class CommandeController {
             @RequestParam("description") String description,
             @RequestParam("bonCommande") MultipartFile bonCommandeFile,
             @RequestParam("bonLivraison") MultipartFile bonLivraisonFile,
-            @RequestParam("N_BC") String nBc, // New field
-            @RequestParam("N_BL") String nBl // New field
-    ) {
+            @RequestParam("nBC") String nBc,
+            @RequestParam("nBL") String nBl,
+            @RequestParam("dateLivraison") @DateTimeFormat(pattern="yyyy-MM-dd") Date dateLivraison
+    )
+    {
         try {
-            Commande commande = commandeService.saveCommande(description, bonCommandeFile, bonLivraisonFile, nBc, nBl);
+            Commande commande = commandeService.saveCommande(description, bonCommandeFile, bonLivraisonFile, nBc, nBl, dateLivraison);
             return ResponseEntity.ok("Commande uploaded successfully: " + commande.getId());
         } catch (IOException e) {
             return ResponseEntity.status(500).body("Failed to upload commande");
@@ -47,7 +51,6 @@ public class CommandeController {
     @GetMapping("/view/{id}")
     public ResponseEntity<Commande> viewCommande(@PathVariable Long id) {
         Optional<Commande> commandeOptional = commandeService.getCommande(id);
-        System.out.println(commandeOptional);
         return commandeOptional.map(ResponseEntity::ok)
                 .orElseGet(() -> ResponseEntity.status(404).body(null));
     }
@@ -56,11 +59,10 @@ public class CommandeController {
     public ResponseEntity<byte[]> downloadBonCommande(@PathVariable Long id) {
         Optional<Commande> commandeOptional = commandeService.getCommande(id);
         if (commandeOptional.isPresent() && commandeOptional.get().getBonCommande() != null) {
-            BonCommande bonCommande = commandeOptional.get().getBonCommande();
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + bonCommande.getFileName() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + commandeOptional.get().getBonCommande().getFileName() + "\"")
                     .contentType(MediaType.APPLICATION_PDF)
-                    .body(bonCommande.getData());
+                    .body(commandeOptional.get().getBonCommande().getData());
         } else {
             return ResponseEntity.status(404).body(null);
         }
@@ -70,11 +72,10 @@ public class CommandeController {
     public ResponseEntity<byte[]> downloadBonLivraison(@PathVariable Long id) {
         Optional<Commande> commandeOptional = commandeService.getCommande(id);
         if (commandeOptional.isPresent() && commandeOptional.get().getBonLivraison() != null) {
-            BonLivraison bonLivraison = commandeOptional.get().getBonLivraison();
             return ResponseEntity.ok()
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + bonLivraison.getFileName() + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + commandeOptional.get().getBonLivraison().getFileName() + "\"")
                     .contentType(MediaType.APPLICATION_PDF)
-                    .body(bonLivraison.getData());
+                    .body(commandeOptional.get().getBonLivraison().getData());
         } else {
             return ResponseEntity.status(404).body(null);
         }
@@ -105,5 +106,4 @@ public class CommandeController {
             return ResponseEntity.status(404).body("Commande not found");
         }
     }
-
 }

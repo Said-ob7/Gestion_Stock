@@ -1,13 +1,14 @@
 package cih.ma.gestionbackend.Controller;
 
+import cih.ma.gestionbackend.Entity.Commande;
 import cih.ma.gestionbackend.Entity.Produit;
 import cih.ma.gestionbackend.Entity.ProductType;
+import cih.ma.gestionbackend.Repository.CommandeRepository;
 import cih.ma.gestionbackend.Repository.ProduitRepository;
 import cih.ma.gestionbackend.Repository.ProductTypeRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -24,7 +25,7 @@ public class ProduitController {
     private ProductTypeRepository productTypeRepository;
 
     @Autowired
-    private SimpMessagingTemplate template;
+    private CommandeRepository commandeRepository;
 
     @GetMapping
     public ResponseEntity<List<Produit>> getAllProducts() {
@@ -38,6 +39,12 @@ public class ProduitController {
         return new ResponseEntity<>(productTypeList, HttpStatus.OK);
     }
 
+    @PostMapping("/types")
+    public ResponseEntity<?> addType(@RequestBody ProductType productType){
+        productTypeRepository.save(productType);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
     @PostMapping("/add")
     public ResponseEntity<Produit> addProduct(@RequestBody Produit produit) {
         if (produit.getProductType() == null || produit.getProductType().getId() == null) {
@@ -49,8 +56,13 @@ public class ProduitController {
 
         produit.setProductType(productType);
 
+        if (produit.getCommande() != null && produit.getCommande().getId() != null) {
+            Commande commande = commandeRepository.findById(produit.getCommande().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid commande ID"));
+            produit.setCommande(commande);
+        }
+
         Produit newProduit = produitRepository.save(produit);
-        template.convertAndSend("/topic/products", "New product added: " + produit.getNserie());
         return new ResponseEntity<>(newProduit, HttpStatus.CREATED);
     }
 
@@ -76,6 +88,12 @@ public class ProduitController {
             ProductType productType = productTypeRepository.findById(produitDetails.getProductType().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid product type ID"));
             produit.setProductType(productType);
+        }
+
+        if (produitDetails.getCommande() != null && produitDetails.getCommande().getId() != null) {
+            Commande commande = commandeRepository.findById(produitDetails.getCommande().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid commande ID"));
+            produit.setCommande(commande);
         }
 
         Produit updatedProduit = produitRepository.save(produit);

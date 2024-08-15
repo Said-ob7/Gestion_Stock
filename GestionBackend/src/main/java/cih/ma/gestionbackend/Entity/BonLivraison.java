@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 @Entity @Getter
 @Setter
 @AllArgsConstructor
@@ -21,9 +23,8 @@ public class BonLivraison {
     @Column(columnDefinition="LONGBLOB")
     private byte[] data;
 
-
     private String N_BL;
 
-
+    private Date DateLivraison;
 
 }

@@ -10,7 +10,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-// Sample data
 const data = [
   { date: "2024-01-01", Laptop: 400, Tablet: 300, Phone: 200, Desktop: 547 },
   { date: "2024-01-02", Laptop: 300, Tablet: 200, Phone: 278, Desktop: 345 },
@@ -21,7 +20,6 @@ const data = [
   { date: "2024-02-06", Laptop: 239, Tablet: 349, Phone: 243, Desktop: 546 },
   { date: "2024-02-20", Laptop: 268, Tablet: 698, Phone: 243, Desktop: 134 },
   { date: "2024-03-06", Laptop: 239, Tablet: 546, Phone: 174, Desktop: 425 },
-  // Add more data points as needed
 ];
 
 const ChartComponent = () => {

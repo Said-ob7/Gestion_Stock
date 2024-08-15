@@ -8,7 +8,8 @@ import lombok.Setter;
 
 import java.util.Date;
 
-@Entity @Getter
+@Entity
+@Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
@@ -28,6 +29,4 @@ public class Commande {
     private BonLivraison bonLivraison;
 
     private Date createdDate;
-
-
 }

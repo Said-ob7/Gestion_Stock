@@ -21,6 +21,7 @@ import av from "@/assets/avatar.png";
 import { io } from "socket.io-client";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Types from "@/components/types";
 
 const Home: React.FC = () => {
   const location = useLocation();
@@ -42,8 +43,6 @@ const Home: React.FC = () => {
         profile,
         matricule,
       } = keycloak.tokenParsed;
-
-      console.log("Token Parsed:", keycloak.tokenParsed); // Debugging
 
       setMatricule(matricule);
       setUsername(preferred_username);
@@ -151,9 +150,14 @@ const Home: React.FC = () => {
               <FaPersonCirclePlus /> Affectation
             </Link>
             {isAdmin && (
-              <Link to="/users" className={getLinkClasses("/users")}>
-                <FaRegUser /> Users
-              </Link>
+              <>
+                <Link to="/types" className={getLinkClasses("/types")}>
+                  <FaRegUser /> Types
+                </Link>
+                <Link to="/users" className={getLinkClasses("/users")}>
+                  <FaRegUser /> Users
+                </Link>
+              </>
             )}
             <hr className="border-t-2 border-gray-300" />
             <Link to="/settings" className={getLinkClasses("/settings")}>
@@ -197,7 +201,12 @@ const Home: React.FC = () => {
               <Route path="/products/*" element={<Products />} />
               <Route path="/orders/*" element={<Orders />} />
               <Route path="/assignment" element={<Assignment />} />
-              {isAdmin && <Route path="/users/*" element={<Users />} />}
+              {isAdmin && (
+                <>
+                  <Route path="/users/*" element={<Users />} />
+                  <Route path="/types" element={<Types />} />
+                </>
+              )}
               <Route path="/settings" element={<Settings />} />
             </Routes>
           </div>

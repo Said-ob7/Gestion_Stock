@@ -280,12 +280,10 @@ const UsersList: React.FC = () => {
             </li>
           ))}
         </ul>
-
-        <Link
-          className="fixed bottom-14 right-14 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700"
-          to="/users/new"
-        >
-          <FaPlus size={20} />
+        <Link className="fixed bottom-14 right-14" to={"/users/new"}>
+          <Button className="bg-blue-600 hover:bg-blue-500">
+            <FaPlus />
+          </Button>
         </Link>
       </div>
     </>

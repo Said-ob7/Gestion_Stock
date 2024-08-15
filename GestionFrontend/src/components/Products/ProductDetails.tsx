@@ -4,10 +4,35 @@ import axios from "@/Api/api";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { IoIosArrowBack } from "react-icons/io";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectGroup,
+  SelectValue,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface ProductType {
   id: number;
   name: string;
+}
+
+interface BonCommande {
+  id: number;
+  n_BC: string;
+}
+
+interface BonLivraison {
+  id: number;
+  n_BL: string;
+}
+
+interface Commande {
+  id: number;
+  description: string;
+  bonCommande: BonCommande;
+  bonLivraison: BonLivraison;
 }
 
 interface Product {
@@ -15,12 +40,15 @@ interface Product {
   nserie: string;
   model: string;
   productType: ProductType | null;
+  commande: Commande | null;
 }
 
 const ProductDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [product, setProduct] = useState<Product | null>(null);
+  const [productTypes, setProductTypes] = useState<ProductType[]>([]);
+  const [commandes, setCommandes] = useState<Commande[]>([]);
 
   useEffect(() => {
     axios
@@ -30,6 +58,24 @@ const ProductDetail: React.FC = () => {
       })
       .catch((error) => {
         console.error("There was an error fetching the product!", error);
+      });
+
+    axios
+      .get("/Prod/types")
+      .then((response) => {
+        setProductTypes(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching product types!", error);
+      });
+
+    axios
+      .get("/commande")
+      .then((response) => {
+        setCommandes(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching commandes!", error);
       });
   }, [id]);
 
@@ -49,6 +95,28 @@ const ProductDetail: React.FC = () => {
     setProduct((prevProduct) =>
       prevProduct ? { ...prevProduct, [name]: value } : null
     );
+  };
+
+  const handleSelectChange = (name: string, value: string) => {
+    if (name === "productType") {
+      const selectedType = productTypes.find(
+        (type) => type.id.toString() === value
+      );
+      setProduct((prevProduct) =>
+        prevProduct
+          ? { ...prevProduct, productType: selectedType || null }
+          : null
+      );
+    } else if (name === "commande") {
+      const selectedCommande = commandes.find(
+        (commande) => commande.id.toString() === value
+      );
+      setProduct((prevProduct) =>
+        prevProduct
+          ? { ...prevProduct, commande: selectedCommande || null }
+          : null
+      );
+    }
   };
 
   const handleSave = () => {
@@ -82,7 +150,7 @@ const ProductDetail: React.FC = () => {
       <h2 className="text-2xl font-bold mb-4 mx-8">Product Detail</h2>
       <div className="p-4 mx-14 w-[700px]">
         <div className="my-8 flex flex-row items-center gap-4">
-          <label className="block font-bold mb-2 w-[150px]"> N Serie :</label>
+          <label className="block font-bold mb-2 w-[150px]">N Serie:</label>
           <Input
             type="text"
             name="nserie"
@@ -92,23 +160,57 @@ const ProductDetail: React.FC = () => {
           />
         </div>
         <div className="my-8 flex flex-row items-center gap-4">
-          <label className="block mb-2 font-bold  w-[150px]">Model :</label>
+          <label className="block font-bold w-[150px]">Type de Produit:</label>
+          <Select
+            onValueChange={(value) => handleSelectChange("productType", value)}
+          >
+            <SelectTrigger className="w-[400px]">
+              <SelectValue
+                placeholder={product.productType?.name || "Select a Type"}
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {productTypes.map((type) => (
+                  <SelectItem key={type.id} value={type.id.toString()}>
+                    {type.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold w-[150px]">Commande:</label>
+          <Select
+            onValueChange={(value) => handleSelectChange("commande", value)}
+          >
+            <SelectTrigger className="w-[400px]">
+              <SelectValue
+                placeholder={
+                  product.commande
+                    ? `${product.commande.bonCommande.n_BC} - ${product.commande.bonLivraison.n_BL}`
+                    : "Select a Commande"
+                }
+              />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectGroup>
+                {commandes.map((commande) => (
+                  <SelectItem key={commande.id} value={commande.id.toString()}>
+                    {commande.bonCommande.n_BC} - {commande.bonLivraison.n_BL}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold mb-2 w-[150px]">Model:</label>
           <Input
             type="text"
             name="model"
             value={product.model}
-            onChange={handleChange}
-            className="p-2 h-14 border rounded w-[400px]"
-          />
-        </div>
-        <div className="my-8 flex flex-row items-center gap-4">
-          <label className="block mb-2 font-bold w-[150px]">
-            Type de Produit :
-          </label>
-          <Input
-            type="text"
-            name="productType"
-            value={product.productType?.name || ""}
             onChange={handleChange}
             className="p-2 h-14 border rounded w-[400px]"
           />
@@ -120,7 +222,7 @@ const ProductDetail: React.FC = () => {
           <Button
             onClick={handleDelete}
             variant="outline"
-            className="mr-2 bg-red-700 hover:bg-red-600 hover:text-white text-white "
+            className="mr-2 bg-red-700 hover:bg-red-600 hover:text-white text-white"
           >
             Delete
           </Button>
