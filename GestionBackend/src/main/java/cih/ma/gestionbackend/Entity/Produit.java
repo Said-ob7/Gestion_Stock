@@ -30,11 +30,13 @@ public class Produit {
     @JoinColumn(name = "commande_id")
     private Commande commande;
 
-    private Integer quantite;
+//    private Integer quantite;
 
     private String affectation;
 
     private Date dateAffectation;
+
+    private String identifiant;
 
 //    @PostLoad
 //    private void populateN_BC_N_BL() {

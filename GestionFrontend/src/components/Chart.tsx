@@ -11,93 +11,89 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-interface ProductData {
-  commande?: {
-    uploadDate?: string;
-  };
-  productType?: {
-    name?: string;
-  };
-  quantite: number;
-}
-
-interface ChartData {
-  [key: string]: number | string;
+// Define the type for each entry in chartData
+interface ChartDataEntry {
   date: string;
+  [key: string]: number | string; // Allows dynamic keys with string type and number values
 }
 
 const ChartComponent = () => {
-  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [chartData, setChartData] = useState<ChartDataEntry[]>([]);
   const [productTypes, setProductTypes] = useState<string[]>([]);
 
   useEffect(() => {
     axios
       .get("/Prod") // Adjust the API endpoint as needed
       .then((response) => {
-        const products: ProductData[] = response.data;
-
-        // Sort products by date to ensure cumulative calculation is correct
-        products.sort((a, b) => {
-          const dateA = new Date(a.commande?.uploadDate || "");
-          const dateB = new Date(b.commande?.uploadDate || "");
-          return dateA.getTime() - dateB.getTime();
-        });
+        const products = response.data;
 
         // Extract unique product types
         const types: string[] = Array.from(
           new Set<string>(
-            products.map((product) => product.productType?.name || "Unknown")
+            products.map(
+              (product: { productType: { name: any } }) =>
+                product.productType?.name || "Unknown"
+            )
           )
         );
 
-        // Transform data to fit chart structure, summing up quantite for each product type per date
-        const formattedData: ChartData[] = [];
-        const cumulativeQuantities: { [key: string]: number } = {};
-
-        products.forEach((product) => {
-          const date = product.commande?.uploadDate?.split("T")[0];
-          if (!date) return;
-
-          const productTypeName = product.productType?.name || "Unknown";
-          cumulativeQuantities[productTypeName] =
-            (cumulativeQuantities[productTypeName] || 0) + product.quantite;
-
-          const existingEntry = formattedData.find(
-            (entry) => entry.date === date
-          );
-
-          if (existingEntry) {
-            existingEntry[productTypeName] =
-              cumulativeQuantities[productTypeName];
-          } else {
-            const newEntry: ChartData = { date };
-            types.forEach((type) => {
-              newEntry[type] = cumulativeQuantities[type] || 0;
-            });
-            formattedData.push(newEntry);
+        // Sort products by uploadDate
+        products.sort(
+          (
+            a: { commande: { uploadDate: string } },
+            b: { commande: { uploadDate: string } }
+          ) => {
+            return (
+              new Date(a.commande.uploadDate).getTime() -
+              new Date(b.commande.uploadDate).getTime()
+            );
           }
-        });
+        );
 
-        // Fill in gaps for missing dates (if needed) by carrying forward the cumulative totals
-        const finalData: ChartData[] = [];
-        let previousEntry: ChartData | undefined;
+        // Initialize an object to keep track of cumulative counts for each product type
+        const cumulativeCounts: { [key: string]: number } = {};
 
-        formattedData.forEach((entry) => {
-          const newEntry: ChartData = { date: entry.date };
+        // Transform data to fit chart structure, counting the number of products for each type per date
+        const formattedData = products.reduce(
+          (
+            acc: ChartDataEntry[],
+            product: {
+              commande: { uploadDate: string };
+              productType: { name: string };
+            }
+          ) => {
+            const date = product.commande?.uploadDate?.split("T")[0];
+            if (!date) return acc;
 
-          types.forEach((type) => {
-            newEntry[type] =
-              entry[type] !== undefined
-                ? entry[type]
-                : previousEntry?.[type] || 0;
-          });
+            const productTypeName = product.productType?.name || "Unknown";
 
-          finalData.push(newEntry);
-          previousEntry = newEntry;
-        });
+            let existingEntry = acc.find((entry) => entry.date === date);
+
+            if (!existingEntry) {
+              existingEntry = { date };
+
+              // Start with the last accumulated counts or initialize to 0
+              types.forEach((type) => {
+                existingEntry![type] = cumulativeCounts[type] || 0;
+              });
+
+              acc.push(existingEntry);
+            }
+
+            // Increment the cumulative count of products for this type
+            cumulativeCounts[productTypeName] =
+              (cumulativeCounts[productTypeName] || 0) + 1;
+
+            // Update the entry for the current date with the cumulative count
+            existingEntry[productTypeName] = cumulativeCounts[productTypeName];
+
+            return acc;
+          },
+          []
+        );
 
         setProductTypes(types);
-        setChartData(finalData);
+        setChartData(formattedData);
       })
       .catch((error) => {
         console.error("There was an error fetching the products!", error);

@@ -36,6 +36,7 @@ interface Commande {
 }
 
 interface Product {
+  identifiant: string | number | readonly string[] | undefined;
   id: number;
   nserie: string;
   model: string;
@@ -211,6 +212,16 @@ const ProductDetail: React.FC = () => {
             type="text"
             name="model"
             value={product.model}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold mb-2 w-[150px]">Identifiant:</label>
+          <Input
+            type="text"
+            name="identifiant"
+            value={product.identifiant}
             onChange={handleChange}
             className="p-2 h-14 border rounded w-[400px]"
           />

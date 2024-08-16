@@ -46,14 +46,21 @@ public class ProduitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    @DeleteMapping("/types/{id}")
-    public ResponseEntity<Void> deleteType(@PathVariable Long id) {
-        ProductType productType = productTypeRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID"));
+//    @DeleteMapping("/types/{id}")
+//    public ResponseEntity<String> deleteType(@PathVariable Long id) {
+//        ProductType productType = productTypeRepository.findById(id)
+//                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID"));
+//
+//        // Check if there are any products associated with this type
+//        if (!productType.getProducts().isEmpty()) {
+//            return new ResponseEntity<>("Type cannot be deleted as it is associated with existing products.", HttpStatus.CONFLICT);
+//        }
+//
+//        productTypeRepository.delete(productType);
+//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+//    }
 
-        productTypeRepository.delete(productType);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-    }
+
 
     @PostMapping("/add")
     public ResponseEntity<Produit> addProduct(@RequestBody Produit produit) {
@@ -88,24 +95,32 @@ public class ProduitController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Produit> updateProduct(@PathVariable Long id, @RequestBody Produit produitDetails) {
+        // Find the existing product by ID
         Produit produit = produitRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Invalid product ID"));
 
+        // Update product fields
         produit.setNserie(produitDetails.getNserie());
         produit.setModel(produitDetails.getModel());
+        produit.setIdentifiant(produitDetails.getIdentifiant());
+        produit.setAffectation(produitDetails.getAffectation());
+        produit.setDateAffectation(produitDetails.getDateAffectation());
 
+        // Handle ProductType update if provided
         if (produitDetails.getProductType() != null && produitDetails.getProductType().getId() != null) {
             ProductType productType = productTypeRepository.findById(produitDetails.getProductType().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid product type ID"));
             produit.setProductType(productType);
         }
 
+        // Handle Commande update if provided
         if (produitDetails.getCommande() != null && produitDetails.getCommande().getId() != null) {
             Commande commande = commandeRepository.findById(produitDetails.getCommande().getId())
                     .orElseThrow(() -> new IllegalArgumentException("Invalid commande ID"));
             produit.setCommande(commande);
         }
 
+        // Save the updated product
         Produit updatedProduit = produitRepository.save(produit);
         return new ResponseEntity<>(updatedProduit, HttpStatus.OK);
     }

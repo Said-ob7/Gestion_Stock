@@ -33,8 +33,8 @@ const Types: React.FC = () => {
     if (newType) {
       axios
         .post("/Prod/types", { name: newType })
-        .then((response) => {
-          setTypes((prevTypes) => [...prevTypes, response.data]);
+        .then(() => {
+          fetchTypes(); // Refresh the list of types
           setNewType(""); // Clear the input after successful addition
           setShowNewTypeInput(false); // Hide the input after adding a new type
         })
@@ -48,10 +48,17 @@ const Types: React.FC = () => {
     axios
       .delete(`/Prod/types/${id}`)
       .then(() => {
-        setTypes((prevTypes) => prevTypes.filter((type) => type.id !== id));
+        fetchTypes(); // Refresh the list of types after deletion
       })
       .catch((error) => {
-        console.error("Error deleting type!", error);
+        if (error.response && error.response.status === 409) {
+          alert(
+            "This type cannot be deleted as it is associated with existing products."
+          );
+        } else {
+          console.error("Error deleting type!", error);
+          alert("An error occurred while trying to delete the type.");
+        }
       });
   };
 
@@ -69,15 +76,15 @@ const Types: React.FC = () => {
               type="text"
               value={type.name}
               readOnly
-              className="w-[250px] bg-gray-100 "
+              className="w-[250px] bg-gray-100"
             />
-            {/* <Button
+            <Button
               variant="ghost"
               onClick={() => deleteType(type.id)}
               className="ml-2 text-red-500 hover:text-red-500"
             >
               <FaTrash />
-            </Button> */}
+            </Button>
           </div>
         ))}
         {!showNewTypeInput ? (

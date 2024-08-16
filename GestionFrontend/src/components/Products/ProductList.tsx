@@ -31,6 +31,7 @@ interface Product {
   productType: ProductType | null;
   commande: Commande | null;
   quantite: number;
+  identifiant: string;
   affectation: string;
   dateAffectation: string;
 }
@@ -309,10 +310,11 @@ const ProductList: React.FC = () => {
               <th className="py-2 px-2 border-r border-b">N_BC</th>
               <th className="py-2 px-2 border-r border-b">N_BL</th>
               <th className="py-2 px-2 border-r border-b">Date</th>
-              <th className="py-2 px-2 border-r border-b">Quantite</th>
+              {/* <th className="py-2 px-2 border-r border-b">Quantite</th> */}
               <th className="py-2 px-2 border-r border-b">N Serie</th>
               <th className="py-2 px-2 border-r border-b">Type</th>
               <th className="py-2 px-2 border-r border-b">Model</th>
+              <th className="py-2 px-2 border-r border-b">Identifiant</th>
               <th className="py-2 px-2 border-r border-b">Affectation</th>
               <th className="py-2 px-2 border-r border-b">Date Affectation</th>
               <th className="py-2 px-2 border-b">Actions</th>
@@ -341,9 +343,9 @@ const ProductList: React.FC = () => {
                     ? formatDate(product.commande.bonLivraison.dateLivraison)
                     : "N/A"}
                 </td>
-                <td className="py-2 px-2 border-r border-b max-w-[10px]">
+                {/* <td className="py-2 px-2 border-r border-b max-w-[10px]">
                   {product.quantite ? product.quantite : "N/A"}
-                </td>
+                </td> */}
                 <td className="py-2 px-2 border-r border-b uppercase">
                   {product.nserie}
                 </td>
@@ -351,6 +353,9 @@ const ProductList: React.FC = () => {
                   {product.productType?.name || "N/A"}
                 </td>
                 <td className="py-2 px-2 border-r border-b">{product.model}</td>
+                <td className="py-2 px-2 border-r border-b">
+                  {product.identifiant}
+                </td>
                 <td className="py-2 px-2 border-r border-b">
                   {product.affectation}
                 </td>

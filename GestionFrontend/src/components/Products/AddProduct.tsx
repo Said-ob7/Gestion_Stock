@@ -46,7 +46,8 @@ const AddProduct: React.FC = () => {
     commande: {
       id: 0,
     },
-    quantite: 0,
+    // quantite: 0,
+    identifiant: "",
     affectation: "",
     dateAffectation: "", // Initialize as an empty string
   });
@@ -126,6 +127,17 @@ const AddProduct: React.FC = () => {
               />
             </div>
             <div className="flex items-center">
+              <label className="font-bold w-[130px]">Identifiant :</label>
+              <Input
+                className="w-[400px]"
+                type="text"
+                name="identifiant"
+                value={product.identifiant}
+                onChange={handleChange}
+                required
+              />
+            </div>
+            <div className="flex items-center">
               <label className="font-bold w-[130px]">Type:</label>
               <Select
                 onValueChange={(value) =>
@@ -180,7 +192,7 @@ const AddProduct: React.FC = () => {
                 required
               />
             </div>
-            <div className="flex items-center">
+            {/* <div className="flex items-center">
               <label className="font-bold w-[130px]">Quantite:</label>
               <Input
                 className="w-[400px]"
@@ -190,7 +202,7 @@ const AddProduct: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-            </div>
+            </div> */}
             <div className="flex items-center">
               <label className="font-bold w-[130px]">Affectation:</label>
               <Input

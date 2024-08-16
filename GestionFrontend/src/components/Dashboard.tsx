@@ -18,13 +18,12 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#FF6347"];
 
 interface Product {
   productType: { name: string };
-  quantite: number;
 }
 
 interface ChartData {
   name: string;
   quantity: number;
-  fill: string; // Add color attribute for the Bar chart
+  fill: string;
 }
 
 const Dashboard = () => {
@@ -36,30 +35,39 @@ const Dashboard = () => {
       .get("/Prod")
       .then((response) => {
         const products: Product[] = response.data;
+
+        // Handle empty response or invalid data
+        if (!Array.isArray(products) || products.length === 0) {
+          console.warn("No products found or invalid data.");
+          return;
+        }
+
+        // Count the number of products for each product type
         const productQuantities: { [key: string]: number } = products.reduce(
           (acc, product) => {
             const type = product.productType?.name || "Unknown";
             if (!acc[type]) {
               acc[type] = 0;
             }
-            acc[type] += product.quantite; // Sum the quantite attribute
+            acc[type] += 1; // Increment the count for the product type
             return acc;
           },
           {} as { [key: string]: number }
         );
 
+        // Convert the product quantities into chart data format
         const chartData: ChartData[] = Object.entries(productQuantities).map(
           ([name, quantity], index) => ({
             name,
-            quantity: quantity as number,
+            quantity,
             fill: COLORS[index % COLORS.length], // Assign colors from the COLORS array
           })
         );
 
         setData(chartData);
 
-        // Find the maximum quantity and set it
-        const maxQuantity = Math.max(...Object.values(productQuantities));
+        // Calculate the maximum quantity for the YAxis domain
+        const maxQuantity = Math.max(...Object.values(productQuantities), 0);
         setMaxQuantity(maxQuantity);
       })
       .catch((error) => {
@@ -92,7 +100,7 @@ const Dashboard = () => {
             />
             <Tooltip />
             <Legend />
-            <Bar dataKey="quantity">
+            <Bar dataKey="quantity" barSize={50}>
               {data.map((entry, index) => (
                 <Cell key={`bar-cell-${index}`} fill={entry.fill} />
               ))}
