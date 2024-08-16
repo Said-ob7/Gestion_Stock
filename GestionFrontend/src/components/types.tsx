@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "@/Api/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { FaPlus } from "react-icons/fa6";
+import { FaPlus, FaTrash } from "react-icons/fa6";
 
 interface Type {
   id: number;
@@ -44,6 +44,17 @@ const Types: React.FC = () => {
     }
   };
 
+  const deleteType = (id: number) => {
+    axios
+      .delete(`/Prod/types/${id}`)
+      .then(() => {
+        setTypes((prevTypes) => prevTypes.filter((type) => type.id !== id));
+      })
+      .catch((error) => {
+        console.error("Error deleting type!", error);
+      });
+  };
+
   const toggleNewTypeInput = () => {
     setShowNewTypeInput((prev) => !prev);
   };
@@ -60,12 +71,23 @@ const Types: React.FC = () => {
               readOnly
               className="w-[250px] bg-gray-100 "
             />
+            {/* <Button
+              variant="ghost"
+              onClick={() => deleteType(type.id)}
+              className="ml-2 text-red-500 hover:text-red-500"
+            >
+              <FaTrash />
+            </Button> */}
           </div>
         ))}
         {!showNewTypeInput ? (
-          <button onClick={toggleNewTypeInput} className="mt-2">
+          <Button
+            variant={"ghost"}
+            onClick={toggleNewTypeInput}
+            className="mt-2"
+          >
             <FaPlus />
-          </button>
+          </Button>
         ) : (
           <div className="flex items-center mt-2">
             <Input

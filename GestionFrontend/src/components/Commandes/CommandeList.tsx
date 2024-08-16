@@ -31,6 +31,7 @@ interface Commande {
   description: string;
   bonCommande: BonCommande;
   bonLivraison: BonLivraison;
+  uploadDate: string;
 }
 
 const CommandeList: React.FC = () => {
@@ -203,7 +204,7 @@ const CommandeList: React.FC = () => {
         </Pagination>
       </div>
 
-      <Link className="fixed bottom-14 right-14" to={"/orders/upload"}>
+      <Link className="fixed bottom-8 right-8" to={"/orders/upload"}>
         <Button className="bg-orange-600 hover:bg-orange-500">
           <FaPlus />
         </Button>

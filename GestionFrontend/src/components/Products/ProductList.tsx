@@ -221,7 +221,7 @@ const ProductList: React.FC = () => {
           "",
           "",
           product.productType?.name || "",
-          product.affectation ? formatDate(product.dateAffectation) : "",
+          product.affectation || "",
           product.dateAffectation ? formatDate(product.dateAffectation) : "",
         ]);
       }
@@ -415,7 +415,7 @@ const ProductList: React.FC = () => {
       </div>
 
       <div className="mt-4 flex">
-        <Link className="fixed bottom-14 right-14" to={"/products/new"}>
+        <Link className="fixed bottom-8 right-8" to={"/products/new"}>
           <Button className="bg-orange-600 hover:bg-orange-500">
             <FaPlus />
           </Button>

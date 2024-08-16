@@ -7,6 +7,7 @@ import { IoDocumentTextSharp } from "react-icons/io5";
 import { FaPersonCirclePlus } from "react-icons/fa6";
 import { IoSettingsOutline } from "react-icons/io5";
 import { FaRegUser } from "react-icons/fa";
+import { MdMergeType } from "react-icons/md";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CIH from "@/assets/CIH.svg";
 import Dashboard from "@/components/Dashboard";
@@ -18,9 +19,6 @@ import Users from "@/components/Users/Users";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "@/components/ui/button";
 import av from "@/assets/avatar.png";
-import { io } from "socket.io-client";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import Types from "@/components/types";
 
 const Home: React.FC = () => {
@@ -110,6 +108,8 @@ const Home: React.FC = () => {
       case "/users/new":
       case `/users/${location.pathname.split("/")[2]}`:
         return "Users";
+      case "/types":
+        return "Types";
       default:
         return "Dashboard";
     }
@@ -128,15 +128,15 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <div className="flex flex-row">
+      <div className="flex h-screen">
         <div
           style={{ backgroundColor: "#F9F9F9" }}
-          className="min-w-[200px] w-1/6 h-full h-screen flex flex-col"
+          className="w-64 flex-shrink-0 h-full flex flex-col"
         >
           <Link className="mt-10 m-4 flex justify-center" to={"/"}>
-            <img className="h-14 " src={CIH} alt="Logo" />
+            <img className="h-14" src={CIH} alt="Logo" />
           </Link>
-          <div className="font-mono flex flex-col gap-12 text-xl font-bold mt-20 ml-12 mr-12">
+          <div className="font-mono flex flex-col gap-10 text-xl font-bold mt-20 ml-4 lg:ml-12 mr-4 lg:mr-12">
             <Link to="/dashboard" className={getLinkClasses("/dashboard")}>
               <RxDashboard /> Dashboard
             </Link>
@@ -152,7 +152,7 @@ const Home: React.FC = () => {
             {isAdmin && (
               <>
                 <Link to="/types" className={getLinkClasses("/types")}>
-                  <FaRegUser /> Types
+                  <MdMergeType /> Types
                 </Link>
                 <Link to="/users" className={getLinkClasses("/users")}>
                   <FaRegUser /> Users
@@ -168,10 +168,12 @@ const Home: React.FC = () => {
             </Button>
           </div>
         </div>
-        <div className="flex-1 right-0 top-0 h-screen overflow-y-auto">
-          <div className="Navbar h-32 flex flex-row items-center justify-between px-10 ">
-            <h1 className="text-3xl font-extrabold uppercase">{getTitle()}</h1>
-            <div className="flex flex-row items-center gap-6">
+        <div className="flex-1 overflow-y-auto">
+          <div className="Navbar h-24 lg:h-32 flex flex-col lg:flex-row items-center justify-between px-4 lg:px-10">
+            <h1 className="text-2xl lg:text-3xl font-extrabold uppercase">
+              {getTitle()}
+            </h1>
+            <div className="flex flex-row items-center gap-4 lg:gap-6 mt-4 lg:mt-0">
               <div className="relative">
                 <FaRegBell className="cursor-pointer text-2xl" />
                 {notifications > 0 && (
@@ -195,7 +197,7 @@ const Home: React.FC = () => {
               </Link>
             </div>
           </div>
-          <div className="mx-8 font-mono">
+          <div className="mx-4 lg:mx-8 font-mono">
             <Routes>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/products/*" element={<Products />} />

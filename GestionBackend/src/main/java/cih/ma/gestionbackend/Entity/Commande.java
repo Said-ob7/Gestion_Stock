@@ -28,5 +28,6 @@ public class Commande {
     @JoinColumn(name = "bon_livraison_id", referencedColumnName = "id")
     private BonLivraison bonLivraison;
 
-    private Date createdDate;
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date uploadDate;
 }

@@ -21,6 +21,7 @@ interface Commande {
   description: string;
   bonCommande: BonCommande;
   bonLivraison: BonLivraison;
+  uploadDate: string; // Added uploadDate field
 }
 
 const CommandeDetails: React.FC = () => {
@@ -98,7 +99,7 @@ const CommandeDetails: React.FC = () => {
   }
 
   return (
-    <div className="max-w-3xl h-[400px] mx-auto mt-10 p-6 bg-white shadow-md rounded-lg flex flex-col justify-between">
+    <div className="max-w-3xl h-[500px] mx-auto mt-10 p-6 bg-white shadow-md rounded-lg flex flex-col justify-between">
       {commande ? (
         <div className="flex flex-col h-full justify-between">
           <div>
@@ -174,9 +175,20 @@ const CommandeDetails: React.FC = () => {
                   }
                 />
               </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Creation Date:
+                </label>
+                <Input
+                  className="w-[500px]"
+                  type="text"
+                  value={new Date(commande.uploadDate).toLocaleDateString()}
+                  readOnly
+                />
+              </div>
             </div>
           </div>
-          <div className="flex justify-end mt-6 space-x-4 ">
+          <div className="flex justify-end mt-14 space-x-4 ">
             <Button
               onClick={handleUpdate}
               variant="outline"

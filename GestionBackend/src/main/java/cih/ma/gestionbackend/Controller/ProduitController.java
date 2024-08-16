@@ -39,10 +39,20 @@ public class ProduitController {
         return new ResponseEntity<>(productTypeList, HttpStatus.OK);
     }
 
+
     @PostMapping("/types")
     public ResponseEntity<?> addType(@RequestBody ProductType productType){
         productTypeRepository.save(productType);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @DeleteMapping("/types/{id}")
+    public ResponseEntity<Void> deleteType(@PathVariable Long id) {
+        ProductType productType = productTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID"));
+
+        productTypeRepository.delete(productType);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping("/add")

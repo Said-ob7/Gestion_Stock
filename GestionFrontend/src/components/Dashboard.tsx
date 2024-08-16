@@ -18,11 +18,13 @@ const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#FF6347"];
 
 interface Product {
   productType: { name: string };
+  quantite: number;
 }
 
 interface ChartData {
   name: string;
   quantity: number;
+  fill: string; // Add color attribute for the Bar chart
 }
 
 const Dashboard = () => {
@@ -40,16 +42,17 @@ const Dashboard = () => {
             if (!acc[type]) {
               acc[type] = 0;
             }
-            acc[type]++;
+            acc[type] += product.quantite; // Sum the quantite attribute
             return acc;
           },
           {} as { [key: string]: number }
         );
 
         const chartData: ChartData[] = Object.entries(productQuantities).map(
-          ([name, quantity]) => ({
+          ([name, quantity], index) => ({
             name,
-            quantity: quantity as number, // Cast quantity to number
+            quantity: quantity as number,
+            fill: COLORS[index % COLORS.length], // Assign colors from the COLORS array
           })
         );
 
@@ -85,11 +88,15 @@ const Dashboard = () => {
             <XAxis dataKey="name" />
             <YAxis
               tickFormatter={(tick) => tick.toString()}
-              domain={[0, maxQuantity + 5]}
+              domain={[0, maxQuantity + 2]}
             />
             <Tooltip />
             <Legend />
-            <Bar dataKey="quantity" fill="#2a9d8f" />
+            <Bar dataKey="quantity">
+              {data.map((entry, index) => (
+                <Cell key={`bar-cell-${index}`} fill={entry.fill} />
+              ))}
+            </Bar>
           </BarChart>
         </div>
 
@@ -107,10 +114,7 @@ const Dashboard = () => {
               dataKey="quantity"
             >
               {data.map((entry, index) => (
-                <Cell
-                  key={`cell-${index}`}
-                  fill={COLORS[index % COLORS.length]}
-                />
+                <Cell key={`pie-cell-${index}`} fill={entry.fill} />
               ))}
             </Pie>
             <Tooltip />

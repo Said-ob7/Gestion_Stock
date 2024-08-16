@@ -5,6 +5,15 @@ import { Button } from "../ui/button";
 import { FaRegUser, FaPlus } from "react-icons/fa";
 import { RiAdminLine } from "react-icons/ri";
 import { CiSearch, CiFilter } from "react-icons/ci";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface User {
   id: string;
@@ -26,6 +35,8 @@ const UsersList: React.FC = () => {
   const [filterRole, setFilterRole] = useState<string>("");
   const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchClientId = async () => {
@@ -193,6 +204,10 @@ const UsersList: React.FC = () => {
       return matchesSearch && matchesDate && matchesRole;
     });
 
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const offset = (currentPage - 1) * itemsPerPage;
+  const currentUsers = filteredUsers.slice(offset, offset + itemsPerPage);
+
   const handleSearchClick = () => {
     setShowSearchModal(!showSearchModal);
   };
@@ -218,7 +233,6 @@ const UsersList: React.FC = () => {
             />
           </div>
         </div>
-
         <div className="flex flex-col gap-4">
           {showSearchModal && (
             <input
@@ -250,9 +264,8 @@ const UsersList: React.FC = () => {
             </div>
           )}
         </div>
-
         <ul className="grid grid-cols-1 gap-4 mt-8">
-          {filteredUsers.map((user) => (
+          {currentUsers.map((user) => (
             <li key={user.id} className="bg-white shadow-md rounded-lg p-4">
               <Link to={`/users/${user.id}`} className="block">
                 <div className="flex items-center justify-between">
@@ -279,8 +292,42 @@ const UsersList: React.FC = () => {
               </Link>
             </li>
           ))}
-        </ul>
-        <Link className="fixed bottom-14 right-14" to={"/users/new"}>
+        </ul>{" "}
+        <div className="mt-4 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === index + 1}
+                    onClick={() => setCurrentPage(index + 1)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {totalPages > 5 && <PaginationEllipsis />}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+        <Link className="fixed bottom-8 right-8" to={"/users/new"}>
           <Button className="bg-blue-600 hover:bg-blue-500">
             <FaPlus />
           </Button>
@@ -289,5 +336,4 @@ const UsersList: React.FC = () => {
     </>
   );
 };
-
 export default UsersList;

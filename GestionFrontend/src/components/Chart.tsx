@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import axios from "@/Api/api";
 import {
   ComposedChart,
   Line,
@@ -10,25 +11,105 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { date: "2024-01-01", Laptop: 400, Tablet: 300, Phone: 200, Desktop: 547 },
-  { date: "2024-01-02", Laptop: 300, Tablet: 200, Phone: 278, Desktop: 345 },
-  { date: "2024-01-03", Laptop: 200, Tablet: 278, Phone: 189, Desktop: 172 },
-  { date: "2024-01-04", Laptop: 278, Tablet: 189, Phone: 239, Desktop: 547 },
-  { date: "2024-01-05", Laptop: 189, Tablet: 239, Phone: 349, Desktop: 625 },
-  { date: "2024-01-06", Laptop: 239, Tablet: 349, Phone: 600, Desktop: 245 },
-  { date: "2024-02-06", Laptop: 239, Tablet: 349, Phone: 243, Desktop: 546 },
-  { date: "2024-02-20", Laptop: 268, Tablet: 698, Phone: 243, Desktop: 134 },
-  { date: "2024-03-06", Laptop: 239, Tablet: 546, Phone: 174, Desktop: 425 },
-];
+interface ProductData {
+  commande?: {
+    uploadDate?: string;
+  };
+  productType?: {
+    name?: string;
+  };
+  quantite: number;
+}
+
+interface ChartData {
+  [key: string]: number | string;
+  date: string;
+}
 
 const ChartComponent = () => {
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [productTypes, setProductTypes] = useState<string[]>([]);
+
+  useEffect(() => {
+    axios
+      .get("/Prod") // Adjust the API endpoint as needed
+      .then((response) => {
+        const products: ProductData[] = response.data;
+
+        // Sort products by date to ensure cumulative calculation is correct
+        products.sort((a, b) => {
+          const dateA = new Date(a.commande?.uploadDate || "");
+          const dateB = new Date(b.commande?.uploadDate || "");
+          return dateA.getTime() - dateB.getTime();
+        });
+
+        // Extract unique product types
+        const types: string[] = Array.from(
+          new Set<string>(
+            products.map((product) => product.productType?.name || "Unknown")
+          )
+        );
+
+        // Transform data to fit chart structure, summing up quantite for each product type per date
+        const formattedData: ChartData[] = [];
+        const cumulativeQuantities: { [key: string]: number } = {};
+
+        products.forEach((product) => {
+          const date = product.commande?.uploadDate?.split("T")[0];
+          if (!date) return;
+
+          const productTypeName = product.productType?.name || "Unknown";
+          cumulativeQuantities[productTypeName] =
+            (cumulativeQuantities[productTypeName] || 0) + product.quantite;
+
+          const existingEntry = formattedData.find(
+            (entry) => entry.date === date
+          );
+
+          if (existingEntry) {
+            existingEntry[productTypeName] =
+              cumulativeQuantities[productTypeName];
+          } else {
+            const newEntry: ChartData = { date };
+            types.forEach((type) => {
+              newEntry[type] = cumulativeQuantities[type] || 0;
+            });
+            formattedData.push(newEntry);
+          }
+        });
+
+        // Fill in gaps for missing dates (if needed) by carrying forward the cumulative totals
+        const finalData: ChartData[] = [];
+        let previousEntry: ChartData | undefined;
+
+        formattedData.forEach((entry) => {
+          const newEntry: ChartData = { date: entry.date };
+
+          types.forEach((type) => {
+            newEntry[type] =
+              entry[type] !== undefined
+                ? entry[type]
+                : previousEntry?.[type] || 0;
+          });
+
+          finalData.push(newEntry);
+          previousEntry = newEntry;
+        });
+
+        setProductTypes(types);
+        setChartData(finalData);
+      })
+      .catch((error) => {
+        console.error("There was an error fetching the products!", error);
+      });
+  }, []);
+
   return (
     <ResponsiveContainer width="100%" height={300}>
       <ComposedChart
         width={500}
         height={400}
-        data={data}
+        data={chartData}
         margin={{
           top: 20,
           right: 20,
@@ -41,13 +122,33 @@ const ChartComponent = () => {
         <YAxis />
         <Tooltip />
         <Legend />
-        <Line type="monotone" dataKey="Laptop" stroke="#8884d8" />
-        <Line type="monotone" dataKey="Tablet" stroke="#82ca9d" />
-        <Line type="monotone" dataKey="Phone" stroke="#ffc658" />
-        <Line type="monotone" dataKey="Desktop" stroke="#2a9d8f" />
+        {productTypes.map((type, index) => (
+          <Line
+            key={type}
+            type="monotone"
+            dataKey={type}
+            stroke={getRandomColor(index)}
+            name={type}
+          />
+        ))}
       </ComposedChart>
     </ResponsiveContainer>
   );
+};
+
+// Helper function to generate random colors for each product type
+const getRandomColor = (index: number) => {
+  const colors = [
+    "#8884d8",
+    "#82ca9d",
+    "#ffc658",
+    "#2a9d8f",
+    "#e63946",
+    "#f4a261",
+    "#457b9d",
+    "#e76f51",
+  ];
+  return colors[index % colors.length];
 };
 
 export default ChartComponent;

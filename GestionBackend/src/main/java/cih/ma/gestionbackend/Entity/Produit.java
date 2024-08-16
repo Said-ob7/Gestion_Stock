@@ -19,8 +19,8 @@ public class Produit {
     private Long id;
     private String nserie;
     private String model;
-    private String N_BC;
-    private String N_BL;
+//    private String N_BC;
+//    private String N_BL;
 
     @ManyToOne
     @JoinColumn(name = "product_type_id")
@@ -36,15 +36,15 @@ public class Produit {
 
     private Date dateAffectation;
 
-    @PostLoad
-    private void populateN_BC_N_BL() {
-        if (commande != null) {
-            if (commande.getBonCommande() != null) {
-                this.N_BC = commande.getBonCommande().getN_BC();
-            }
-            if (commande.getBonLivraison() != null) {
-                this.N_BL = commande.getBonLivraison().getN_BL();
-            }
-        }
-    }
+//    @PostLoad
+//    private void populateN_BC_N_BL() {
+//        if (commande != null) {
+//            if (commande.getBonCommande() != null) {
+//                this.N_BC = commande.getBonCommande().getN_BC();
+//            }
+//            if (commande.getBonLivraison() != null) {
+//                this.N_BL = commande.getBonLivraison().getN_BL();
+//            }
+//        }
+//    }
 }

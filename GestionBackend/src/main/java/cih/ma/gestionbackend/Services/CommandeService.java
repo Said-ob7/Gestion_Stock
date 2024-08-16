@@ -44,6 +44,7 @@ public class CommandeService {
         commande.setDescription(description);
         commande.setBonCommande(bonCommande);
         commande.setBonLivraison(bonLivraison);
+        commande.setUploadDate(new Date());
 
         return commandeRepository.save(commande);
     }
