@@ -14,6 +14,14 @@ import {
 import { Input } from "../components/ui/input";
 import { MdEditNote } from "react-icons/md";
 import { FaPlus } from "react-icons/fa6";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
 interface ProductType {
   id: number;
@@ -49,20 +57,29 @@ interface Commande {
   bonLivraison: BonLivraison;
 }
 
+interface User {
+  id: number;
+  matricule: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+}
+
 const Affectation: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [productsTypes, setProductTypes] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [filters, setFilters] = useState({ nserie: "", type: "", model: "" });
+  const [users, setUsers] = useState<User[]>([]); // State for users
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 8;
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Fetch products
     axios
       .get("/Prod")
       .then((response) => {
-        // Filter products that have no affectation
         const productsWithoutAffectation = response.data.filter(
           (product: Product) => !product.affectation
         );
@@ -73,6 +90,7 @@ const Affectation: React.FC = () => {
         console.error("There was an error fetching the products!", error);
       });
 
+    // Fetch commandes
     axios
       .get("/commande")
       .then((response) => {
@@ -90,6 +108,7 @@ const Affectation: React.FC = () => {
         console.error("Error fetching commandes!", error);
       });
 
+    // Fetch product types
     axios
       .get("/productTypes")
       .then((response) => {
@@ -97,6 +116,16 @@ const Affectation: React.FC = () => {
       })
       .catch((error) => {
         console.error("Error fetching product types!", error);
+      });
+
+    // Fetch users
+    axios
+      .get("/User")
+      .then((response) => {
+        setUsers(response.data);
+      })
+      .catch((error) => {
+        console.error("Error fetching users!", error);
       });
   }, []);
 
@@ -124,6 +153,17 @@ const Affectation: React.FC = () => {
     id: number,
     field: keyof Product,
     value: string
+  ) => {
+    setFilteredProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === id ? { ...product, [field]: value } : product
+      )
+    );
+  };
+  const handleSelectChange = (
+    field: keyof Product,
+    value: string,
+    id: number
   ) => {
     setFilteredProducts((prevProducts) =>
       prevProducts.map((product) =>
@@ -240,44 +280,56 @@ const Affectation: React.FC = () => {
           <tbody>
             {currentPageItems.map((product) => (
               <tr key={product.id} className="hover:bg-gray-50">
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.commande?.bonCommande.n_BC || "N/A"}
                 </td>
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.commande?.bonLivraison.n_BL || "N/A"}
                 </td>
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.commande?.bonLivraison.dateLivraison
                     ? formatDate(product.commande.bonLivraison.dateLivraison)
                     : "N/A"}
                 </td>
-                <td className="py-2 px-2 border-r border-b uppercase">
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.nserie}
                 </td>
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.productType?.name || "N/A"}
                 </td>
-                <td className="py-2 px-2 border-r border-b">{product.model}</td>
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
+                  {product.model}
+                </td>
+                <td className="py-2 px-2 border-r border-b text-center">
                   {product.identifiant}
                 </td>
-                <td className="py-2 px-2 border-r border-b">
-                  <Input
-                    type="text"
+                <td className="py-2 px-2 border-r border-b text-center">
+                  <Select
                     value={product.affectation || ""}
-                    onChange={(e) =>
-                      handleInputChange(
-                        product.id,
-                        "affectation",
-                        e.target.value
-                      )
+                    onValueChange={(value) =>
+                      handleSelectChange("affectation", value, product.id)
                     }
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select User" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.lastName}>
+                            {user.lastName}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
                 </td>
-                <td className="py-2 px-2 border-r border-b">
+                <td className="py-2 px-2 border-r border-b text-center">
                   <Input
                     type="date"
-                    value={product.dateAffectation || ""}
+                    value={
+                      product.dateAffectation ? product.dateAffectation : ""
+                    }
                     onChange={(e) =>
                       handleInputChange(
                         product.id,
@@ -285,17 +337,22 @@ const Affectation: React.FC = () => {
                         e.target.value
                       )
                     }
+                    className="p-2 border rounded"
                   />
                 </td>
-                <td className="py-2 px-2 border-b">
-                  <Button onClick={() => handleSave(product)}>Save</Button>
+                <td className="py-2 px-2 border-b text-center">
+                  <Button
+                    onClick={() => handleSave(product)}
+                    className=" text-white p-2 rounded"
+                  >
+                    Save
+                  </Button>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-
       <div className="mt-4 flex justify-center">
         <Pagination>
           <PaginationContent>

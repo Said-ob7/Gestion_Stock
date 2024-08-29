@@ -42,6 +42,8 @@ interface Product {
   model: string;
   productType: ProductType | null;
   commande: Commande | null;
+  affectation: string | null;
+  dateAffectation: string | null;
 }
 
 const ProductDetail: React.FC = () => {
@@ -55,7 +57,15 @@ const ProductDetail: React.FC = () => {
     axios
       .get(`/Prod/${id}`)
       .then((response) => {
-        setProduct(response.data);
+        const data = response.data;
+        // Format the date correctly
+        if (data.dateAffectation) {
+          const formattedDate = new Date(data.dateAffectation)
+            .toISOString()
+            .split("T")[0]; // Convert to 'YYYY-MM-DD'
+          data.dateAffectation = formattedDate;
+        }
+        setProduct(data);
       })
       .catch((error) => {
         console.error("There was an error fetching the product!", error);
@@ -163,12 +173,11 @@ const ProductDetail: React.FC = () => {
         <div className="my-8 flex flex-row items-center gap-4">
           <label className="block font-bold w-[150px]">Type de Produit:</label>
           <Select
+            value={product.productType?.id.toString() || ""}
             onValueChange={(value) => handleSelectChange("productType", value)}
           >
             <SelectTrigger className="w-[400px]">
-              <SelectValue
-                placeholder={product.productType?.name || "Select a Type"}
-              />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -184,16 +193,11 @@ const ProductDetail: React.FC = () => {
         <div className="my-8 flex flex-row items-center gap-4">
           <label className="block font-bold w-[150px]">Commande:</label>
           <Select
+            value={product.commande?.id.toString() || ""}
             onValueChange={(value) => handleSelectChange("commande", value)}
           >
             <SelectTrigger className="w-[400px]">
-              <SelectValue
-                placeholder={
-                  product.commande
-                    ? `${product.commande.bonCommande.n_BC} - ${product.commande.bonLivraison.n_BL}`
-                    : "Select a Commande"
-                }
-              />
+              <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectGroup>
@@ -222,6 +226,28 @@ const ProductDetail: React.FC = () => {
             type="text"
             name="identifiant"
             value={product.identifiant}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold mb-2 w-[150px]">Affectation:</label>
+          <Input
+            type="text"
+            name="affectation"
+            value={product.affectation || ""}
+            onChange={handleChange}
+            className="p-2 h-14 border rounded w-[400px]"
+          />
+        </div>
+        <div className="my-8 flex flex-row items-center gap-4">
+          <label className="block font-bold mb-2 w-[150px]">
+            Date Affectation:
+          </label>
+          <Input
+            type="date"
+            name="dateAffectation"
+            value={product.dateAffectation || ""}
             onChange={handleChange}
             className="p-2 h-14 border rounded w-[400px]"
           />

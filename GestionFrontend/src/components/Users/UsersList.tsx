@@ -285,7 +285,7 @@ const UsersList: React.FC = () => {
                       {user.firstName} {user.lastName}
                     </p>
                     <p className="text-sm font-semibold">
-                      {user.roles?.includes("client_admin") ? "Admin" : "User"}
+                      {user.roles?.includes("client_admin") ? "Admin" : "Staff"}
                     </p>
                   </div>
                 </div>
