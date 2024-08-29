@@ -167,10 +167,10 @@ const Settings: React.FC = () => {
   return (
     <>
       <div className="flex flex-row items-center gap-[4px] my-4">
-        <Link to={"/profile"}>
+        <Link to={"/dashboard"}>
           <IoIosArrowBack />
         </Link>
-        <Link to={"/profile"}>Retour</Link>
+        <Link to={"/dashboard"}>Retour</Link>
       </div>
       <div className="w-[700px] mx-14">
         <h2 className="text-xl font-bold">Settings</h2>
@@ -203,80 +203,86 @@ const Settings: React.FC = () => {
             </Button>
           </div>
         </form>
-        <h2 className="text-xl font-bold mt-10">User Information</h2>
-        <div className="mx-14">
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28 font-bold">Matricule:</label>
-            <p className="w-[500px] h-14 mx-4 flex items-center">
-              {user?.matricule}
-            </p>
+        <div className="flex flex-row">
+          <div>
+            <h2 className="text-xl font-bold mt-10">User Information</h2>
+            <div className="ml-14">
+              <div className="mt-4 flex flex-row items-center">
+                <label className="w-28 font-bold">Matricule:</label>
+                <p className="w-[300px] h-14 mx-4 flex items-center">
+                  {user?.matricule}
+                </p>
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <label className="w-28 font-bold">Username:</label>
+                <p className="w-[300px] h-14 mx-4 flex items-center">
+                  {user?.preferred_username}
+                </p>
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <label className="w-28 font-bold">Email:</label>
+                <p className="w-[300px] h-14 mx-4 flex items-center">
+                  {user?.email}
+                </p>
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <label className="w-28 font-bold">First Name:</label>
+                <p className="w-[300px] h-14 mx-4 flex items-center">
+                  {user?.given_name}
+                </p>
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <label className="w-28 font-bold">Last Name:</label>
+                <p className="w-[300px] h-14 mx-4 flex items-center">
+                  {user?.family_name}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28 font-bold">Username:</label>
-            <p className="w-[500px] h-14 mx-4 flex items-center">
-              {user?.preferred_username}
-            </p>
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28 font-bold">Email:</label>
-            <p className="w-[500px] h-14 mx-4 flex items-center">
-              {user?.email}
-            </p>
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28 font-bold">First Name:</label>
-            <p className="w-[500px] h-14 mx-4 flex items-center">
-              {user?.given_name}
-            </p>
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28 font-bold">Last Name:</label>
-            <p className="w-[500px] h-14 mx-4 flex items-center">
-              {user?.family_name}
-            </p>
+          <div>
+            <h2 className="text-xl font-bold mt-10">Changer Mot de Passe</h2>
+            <form onSubmit={handlePasswordSubmit}>
+              <div className="mt-16 flex flex-row items-center">
+                <Input
+                  className="w-[500px] h-14 mx-4"
+                  type="password"
+                  name="oldPassword"
+                  id="oldPassword"
+                  placeholder="Ancien Mot de passe"
+                  value={formData.oldPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <Input
+                  className="w-[500px] h-14 mx-4"
+                  type="password"
+                  name="newPassword"
+                  id="newPassword"
+                  placeholder="Nouveau Mot de passe"
+                  value={formData.newPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="mt-4 flex flex-row items-center">
+                <Input
+                  className="w-[500px] h-14 mx-4"
+                  type="password"
+                  name="confirmPassword"
+                  id="confirmPassword"
+                  placeholder="Confirmer Mot de passe"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                />
+              </div>
+              <div className="flex justify-end m-14 gap-8">
+                <Button type="submit" className="w-32">
+                  Change Password
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
-        <h2 className="text-xl font-bold mt-10">Changer Mot de Passe</h2>
-        <form onSubmit={handlePasswordSubmit}>
-          <div className="mt-4 flex flex-row items-center">
-            <Input
-              className="w-[500px] h-14 mx-4"
-              type="password"
-              name="oldPassword"
-              id="oldPassword"
-              placeholder="Ancien Mot de passe"
-              value={formData.oldPassword}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <Input
-              className="w-[500px] h-14 mx-4"
-              type="password"
-              name="newPassword"
-              id="newPassword"
-              placeholder="Nouveau Mot de passe"
-              value={formData.newPassword}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <Input
-              className="w-[500px] h-14 mx-4"
-              type="password"
-              name="confirmPassword"
-              id="confirmPassword"
-              placeholder="Confirmer Mot de passe"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="flex justify-end m-14 gap-8">
-            <Button type="submit" className="w-32">
-              Change Password
-            </Button>
-          </div>
-        </form>
       </div>
     </>
   );

@@ -1,21 +1,17 @@
 import React, { useState } from "react";
 import { Input } from "../ui/input";
-import { useKeycloak } from "@react-keycloak/web";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "../ui/button";
 import { IoIosArrowBack } from "react-icons/io";
+import axios from "@/Api/api"; // Using the axios instance with baseURL
 
-const UserForm: React.FC = () => {
-  const { keycloak } = useKeycloak();
+const UserAdd: React.FC = () => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    username: "",
+    matricule: "",
     email: "",
     firstName: "",
     lastName: "",
-    password: "",
-    matricule: "",
-    profile: "/src/assets/avatar.png", // Default profile picture URL
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,57 +25,27 @@ const UserForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const url = "http://localhost:8080/admin/realms/said/users";
-
     const userPayload = {
-      username: formData.username,
+      matricule: formData.matricule,
       email: formData.email,
       firstName: formData.firstName,
       lastName: formData.lastName,
-      enabled: true,
-      credentials: [
-        {
-          type: "password",
-          value: formData.password,
-          temporary: false,
-        },
-      ],
-      attributes: {
-        matricule: formData.matricule,
-        profile: formData.profile,
-      },
     };
 
     try {
-      const response = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${keycloak.token}`,
-        },
-        body: JSON.stringify(userPayload),
-      });
+      const response = await axios.post("/User/add", userPayload);
 
-      if (response.ok) {
-        const text = await response.text();
-        const newUser = text ? JSON.parse(text) : {};
-        console.log("User created successfully:", newUser);
+      if (response.status === 201) {
+        console.log("User created successfully:", response.data);
         alert("User created successfully!");
         setFormData({
-          username: "",
+          matricule: "",
           email: "",
           firstName: "",
           lastName: "",
-          password: "",
-          matricule: "",
-          profile: "/src/assets/avatar.png", // Reset profile to default URL
         });
         navigate("/users");
-      } else if (response.status === 409) {
-        alert("A user with this username or email already exists.");
       } else {
-        const errorMessage = await response.text();
-        console.error("Failed to create user:", errorMessage);
         alert("Failed to create user.");
       }
     } catch (error) {
@@ -97,7 +63,7 @@ const UserForm: React.FC = () => {
         <Link to={"/users"}>Retour</Link>
       </div>
       <div className="w-[700px] mx-14">
-        <h2 className="text-xl font-bold">Create Staff</h2>
+        <h2 className="text-xl font-bold">Create User</h2>
         <form onSubmit={handleSubmit}>
           <div className="mt-4 flex flex-row items-center">
             <label className="w-28" htmlFor="matricule">
@@ -109,20 +75,6 @@ const UserForm: React.FC = () => {
               name="matricule"
               id="matricule"
               value={formData.matricule}
-              onChange={handleChange}
-              required
-            />
-          </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28" htmlFor="username">
-              Username :
-            </label>
-            <Input
-              className="w-[500px] h-14 m-4"
-              type="text"
-              name="username"
-              id="username"
-              value={formData.username}
               onChange={handleChange}
               required
             />
@@ -169,27 +121,10 @@ const UserForm: React.FC = () => {
               required
             />
           </div>
-          <div className="mt-4 flex flex-row items-center">
-            <label className="w-28" htmlFor="password">
-              Password :
-            </label>
-            <Input
-              className="w-[500px] h-14 mx-4"
-              type="password"
-              name="password"
-              id="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-          </div>
 
-          <div className="flex justify-end items-center m-14 gap-8">
-            <Link to={"/users/add"} className="text-blue-500">
-              Create a regular user
-            </Link>
+          <div className="flex justify-end m-14 gap-8">
             <Button type="submit" className="w-32">
-              Create Staff
+              Create User
             </Button>
           </div>
         </form>
@@ -198,4 +133,4 @@ const UserForm: React.FC = () => {
   );
 };
 
-export default UserForm;
+export default UserAdd;

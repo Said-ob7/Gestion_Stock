@@ -2,9 +2,18 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useKeycloak } from "@react-keycloak/web";
 import { Button } from "../ui/button";
-import { FaRegUser, FaPlus, FaSearch, FaFilter } from "react-icons/fa";
+import { FaRegUser, FaPlus } from "react-icons/fa";
 import { RiAdminLine } from "react-icons/ri";
 import { CiSearch, CiFilter } from "react-icons/ci";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface User {
   id: string;
@@ -20,17 +29,18 @@ interface User {
 const UsersList: React.FC = () => {
   const { keycloak } = useKeycloak();
   const [users, setUsers] = useState<User[]>([]);
-  const [clientUsers, setClientUsers] = useState<User[]>([]);
-  const [clientAdmins, setClientAdmins] = useState<User[]>([]);
   const [clientId, setClientId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [filterDate, setFilterDate] = useState<string>("");
+  const [filterRole, setFilterRole] = useState<string>("");
   const [showSearchModal, setShowSearchModal] = useState<boolean>(false);
   const [showFilterModal, setShowFilterModal] = useState<boolean>(false);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const itemsPerPage = 5;
 
   useEffect(() => {
     const fetchClientId = async () => {
-      const url = "http://localhost:8080/admin/realms/Gestion_Stock/clients"; // Replace with your Keycloak URL
+      const url = "http://localhost:8080/admin/realms/said/clients";
 
       try {
         const response = await fetch(url, {
@@ -43,7 +53,7 @@ const UsersList: React.FC = () => {
           const clients = await response.json();
           const client = clients.find(
             (client: { clientId: string }) =>
-              client.clientId === "S256"
+              client.clientId === "gestion-rest-api"
           );
           if (client) {
             setClientId(client.id);
@@ -63,7 +73,7 @@ const UsersList: React.FC = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      const url = "http://localhost:8080/admin/realms/Gestion_Stock/users"; // Replace with your Keycloak URL
+      const url = "http://localhost:8080/admin/realms/said/users";
 
       try {
         const response = await fetch(url, {
@@ -90,8 +100,8 @@ const UsersList: React.FC = () => {
     if (!clientId) return;
 
     const fetchUserRoles = async (userId: string): Promise<string[]> => {
-      const realmRolesUrl = `http://localhost:8080/admin/realms/Gestion_Stock/users/${userId}/role-mappings/realm`; // Replace with your Keycloak URL
-      const clientRolesUrl = `http://localhost:8080/admin/realms/Gestion_Stock/users/${userId}/role-mappings/clients/${clientId}`; // Replace with your Keycloak URL
+      const realmRolesUrl = `http://localhost:8080/admin/realms/said/users/${userId}/role-mappings/realm`;
+      const clientRolesUrl = `http://localhost:8080/admin/realms/said/users/${userId}/role-mappings/clients/${clientId}`;
 
       try {
         const [realmRolesResponse, clientRolesResponse] = await Promise.all([
@@ -127,7 +137,7 @@ const UsersList: React.FC = () => {
     };
 
     const fetchUserDetails = async (user: User) => {
-      const userDetailsUrl = `http://localhost:8080/admin/realms/said/users/${user.id}`; // Replace with your Keycloak URL
+      const userDetailsUrl = `http://localhost:8080/admin/realms/said/users/${user.id}`;
       try {
         const response = await fetch(userDetailsUrl, {
           headers: {
@@ -152,168 +162,178 @@ const UsersList: React.FC = () => {
       }
     };
 
-    const categorizeUsers = async (users: User[]) => {
-      const clientUsers: User[] = [];
-      const clientAdmins: User[] = [];
-      const currentUserId = keycloak.subject; // ID of the currently authenticated user
+    const updateUserRolesAndDetails = async (users: User[]) => {
+      const updatedUsers = await Promise.all(
+        users.map(async (user) => {
+          const roles = await fetchUserRoles(user.id);
+          const userDetails = await fetchUserDetails(user);
+          return {
+            ...user,
+            roles,
+            createdAt: userDetails.createdAt,
+            matricule: userDetails.matricule,
+          };
+        })
+      );
 
-      for (const user of users) {
-        if (user.id === currentUserId) continue; // Exclude the currently authenticated user
-
-        const roles = await fetchUserRoles(user.id);
-        const userDetails = await fetchUserDetails(user);
-        user.roles = roles;
-        user.createdAt = userDetails.createdAt;
-        user.matricule = userDetails.matricule;
-
-        if (roles.includes("client_admin")) {
-          clientAdmins.push(user);
-        } else {
-          clientUsers.push(user);
-        }
-      }
-
-      setClientUsers(clientUsers);
-      setClientAdmins(clientAdmins);
+      setUsers(updatedUsers);
     };
 
     if (users.length > 0) {
-      categorizeUsers(users);
+      updateUserRolesAndDetails(users);
     }
   }, [users, keycloak.token, clientId]);
 
-  const filteredUsers = clientUsers.filter((user) => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.matricule?.includes(searchTerm.toLowerCase());
-    const matchesDate = filterDate
-      ? new Date(user.createdAt || 0).toDateString() ===
-        new Date(filterDate).toDateString()
-      : true;
-    return matchesSearch && matchesDate;
-  });
+  const filteredUsers = users
+    .filter((user) => user.id !== keycloak.subject) // Exclude connected user
+    .filter((user) => {
+      const matricule = String(user.matricule || "");
+      const matchesSearch =
+        user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        matricule.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesDate = filterDate
+        ? new Date(user.createdAt || 0).toDateString() ===
+          new Date(filterDate).toDateString()
+        : true;
+      const matchesRole =
+        filterRole === "client_admin"
+          ? user.roles?.includes(filterRole)
+          : filterRole === "client_user"
+          ? !user.roles?.includes("client_admin")
+          : true;
+      return matchesSearch && matchesDate && matchesRole;
+    });
 
-  const filteredAdmins = clientAdmins.filter((user) => {
-    const matchesSearch =
-      user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.matricule?.includes(searchTerm.toLowerCase());
-    const matchesDate = filterDate
-      ? new Date(user.createdAt || 0).toDateString() ===
-        new Date(filterDate).toDateString()
-      : true;
-    return matchesSearch && matchesDate;
-  });
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const offset = (currentPage - 1) * itemsPerPage;
+  const currentUsers = filteredUsers.slice(offset, offset + itemsPerPage);
 
   const handleSearchClick = () => {
-    if (showSearchModal) {
-      setShowSearchModal(false);
-    } else {
-      setShowSearchModal(true);
-    }
+    setShowSearchModal(!showSearchModal);
   };
 
   const handleFilterClick = () => {
-    if (showFilterModal) {
-      setShowFilterModal(false);
-    } else {
-      setShowFilterModal(true);
-    }
+    setShowFilterModal(!showFilterModal);
   };
 
   return (
     <>
-      <div>
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="font-mono font-bold text-xl">Utilisateurs :</h2>
+      <div className="relative">
+        <div className="flex justify-between items-center mb-6">
           <div className="flex gap-4">
             <CiSearch
               onClick={handleSearchClick}
-              className="cursor-pointer"
+              className="cursor-pointer text-gray-600 hover:text-gray-800"
               size={24}
             />
-
             <CiFilter
               onClick={handleFilterClick}
-              className="cursor-pointer"
+              className="cursor-pointer text-gray-600 hover:text-gray-800"
               size={24}
             />
           </div>
         </div>
-        <div className="flex flex-row items-center">
+        <div className="flex flex-col gap-4">
           {showSearchModal && (
-            <div className="">
-              <input
-                type="text"
-                placeholder="Search by name or matricule"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="p-2 border border-gray-300 rounded-md mb-4 w-full min-w-[400px]"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Search by name or matricule"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="p-2 border border-gray-300 rounded-md mb-4 w-full"
+            />
           )}
+
           {showFilterModal && (
-            <div className="">
+            <div className="flex gap-4">
               <input
                 type="date"
                 value={filterDate}
                 onChange={(e) => setFilterDate(e.target.value)}
                 className="p-2 border border-gray-300 rounded-md mb-4 w-full"
               />
+              <select
+                value={filterRole}
+                onChange={(e) => setFilterRole(e.target.value)}
+                className="p-2 border border-gray-300 rounded-md mb-4 w-full"
+              >
+                <option value="">All Roles</option>
+                <option value="client_user">User</option>
+                <option value="client_admin">Admin</option>
+              </select>
             </div>
           )}
         </div>
-        <ul className="flex flex-col gap-4 mx-4 my-8">
-          {filteredUsers.map((user) => (
-            <li key={user.id} className="w-[900px]">
-              <Link to={`/users/${user.id}`}>
-                <div
-                  style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14   flex flex-row items-center gap-[200px] rounded-md shadow"
-                >
-                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
-                    <FaRegUser className="ml-8 " />
-                    <p className="font-sans uppercase ">{user.matricule}</p>
+        <ul className="grid grid-cols-1 gap-4 mt-8">
+          {currentUsers.map((user) => (
+            <li key={user.id} className="bg-white shadow-md rounded-lg p-4">
+              <Link to={`/users/${user.id}`} className="block">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    {user.roles?.includes("client_admin") ? (
+                      <RiAdminLine className="text-blue-600" size={28} />
+                    ) : (
+                      <FaRegUser className="text-gray-600" size={28} />
+                    )}
+                    <div className="ml-4">
+                      <p className="font-bold text-lg">{user.matricule}</p>
+                      <p className="text-gray-600">{user.email}</p>
+                    </div>
                   </div>
-                  <p className="uppercase font-extrabold w-[50px]">
-                    {user.username}
-                  </p>
-                  <p>{user.email}</p>
+                  <div className="text-right">
+                    <p className="font-medium text-sm text-gray-500">
+                      {user.firstName} {user.lastName}
+                    </p>
+                    <p className="text-sm font-semibold">
+                      {user.roles?.includes("client_admin") ? "Admin" : "Staff"}
+                    </p>
+                  </div>
                 </div>
               </Link>
             </li>
           ))}
-        </ul>
-
-        <h2 className="font-mono font-bold text-xl">Administrateurs :</h2>
-        <ul className="flex flex-col gap-4 mx-4 my-8">
-          {filteredAdmins.map((user) => (
-            <li key={user.id} className="w-[900px]">
-              <Link to={`/users/${user.id}`}>
-                <div
-                  style={{ backgroundColor: "#f8f9fa" }}
-                  className="h-14  flex flex-row items-center gap-[200px] rounded-md shadow"
-                >
-                  <div className="name w-[150px]   font-bold flex flex-row items-center gap-4">
-                    <RiAdminLine className="ml-8 h-6 w-6" />
-                    <p className="font-sans uppercase ">{user.matricule}</p>
-                  </div>
-                  <p className="uppercase font-extrabold w-[50px]">
-                    {user.username}
-                  </p>
-                  <p>{user.email}</p>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        </ul>{" "}
+        <div className="mt-4 flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, index) => (
+                <PaginationItem key={index}>
+                  <PaginationLink
+                    href="#"
+                    isActive={currentPage === index + 1}
+                    onClick={() => setCurrentPage(index + 1)}
+                  >
+                    {index + 1}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              {totalPages > 5 && <PaginationEllipsis />}
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
+        <Link className="fixed bottom-8 right-8" to={"/users/new"}>
+          <Button className="bg-blue-600 hover:bg-blue-500">
+            <FaPlus />
+          </Button>
+        </Link>
       </div>
-      <Link className="fixed bottom-14 right-14" to="/users/new">
-        <Button>
-          <FaPlus />
-        </Button>
-      </Link>
     </>
   );
 };
-
 export default UsersList;

@@ -1,22 +1,52 @@
 package cih.ma.gestionbackend.Entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Entity @Getter @Setter @AllArgsConstructor @NoArgsConstructor
+import java.util.Date;
+
+@Entity
+@Getter
+@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class Produit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-
     private String nserie;
-    private String type;
     private String model;
+//    private String N_BC;
+//    private String N_BL;
+
+    @ManyToOne
+    @JoinColumn(name = "product_type_id")
+    private ProductType productType;
+
+    @ManyToOne
+    @JoinColumn(name = "commande_id")
+    private Commande commande;
+
+//    private Integer quantite;
+
+    private String affectation;
+
+    private Date dateAffectation;
+
+    private String identifiant;
+
+//    @PostLoad
+//    private void populateN_BC_N_BL() {
+//        if (commande != null) {
+//            if (commande.getBonCommande() != null) {
+//                this.N_BC = commande.getBonCommande().getN_BC();
+//            }
+//            if (commande.getBonLivraison() != null) {
+//                this.N_BL = commande.getBonLivraison().getN_BL();
+//            }
+//        }
+//    }
 }

@@ -11,11 +11,9 @@ import { useEffect } from "react";
 
 const App = () => {
   const { keycloak, initialized } = useKeycloak();
-  console.log(keycloak, "keycloak");
-  console.log(initialized, "initialized");
-  if (!initialized) {
-    return <div>Loading...</div>;
-  }
+  // console.log(keycloak, "keycloak");
+  // console.log(initialized, "initialized");
+
   useEffect(() => {
     if (initialized) {
       if (!keycloak.authenticated) {
@@ -23,7 +21,9 @@ const App = () => {
       }
     }
   }, [initialized, keycloak]);
-
+  if (!initialized) {
+    return <div>Loading...</div>;
+  }
   return (
     <>
       <Router>
