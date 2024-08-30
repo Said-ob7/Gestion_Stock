@@ -20,7 +20,7 @@ const UserDetails: React.FC = () => {
 
   useEffect(() => {
     const fetchUser = async () => {
-      const url = `http://localhost:8080/admin/realms/Gestion_Stock/users/${userId}`; // Replace with your Keycloak URL
+      const url = `http://localhost:8080/admin/realms/said/users/${userId}`; // Replace with your Keycloak URL
 
       try {
         const response = await fetch(url, {

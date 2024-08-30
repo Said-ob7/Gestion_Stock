@@ -46,19 +46,19 @@ public class ProduitController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-//    @DeleteMapping("/types/{id}")
-//    public ResponseEntity<String> deleteType(@PathVariable Long id) {
-//        ProductType productType = productTypeRepository.findById(id)
-//                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID"));
-//
-//        // Check if there are any products associated with this type
+    @DeleteMapping("/types/{id}")
+    public ResponseEntity<String> deleteType(@PathVariable Long id) {
+        ProductType productType = productTypeRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid type ID"));
+
+        // Check if there are any products associated with this type
 //        if (!productType.getProducts().isEmpty()) {
 //            return new ResponseEntity<>("Type cannot be deleted as it is associated with existing products.", HttpStatus.CONFLICT);
 //        }
-//
-//        productTypeRepository.delete(productType);
-//        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-//    }
+
+        productTypeRepository.delete(productType);
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 
 

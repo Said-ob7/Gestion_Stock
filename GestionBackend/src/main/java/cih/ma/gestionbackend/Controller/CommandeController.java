@@ -89,6 +89,7 @@ public class CommandeController {
             commande.setDescription(updatedCommande.getDescription());
             commande.getBonCommande().setN_BC(updatedCommande.getBonCommande().getN_BC());
             commande.getBonLivraison().setN_BL(updatedCommande.getBonLivraison().getN_BL());
+            commande.getBonLivraison().setDateLivraison(updatedCommande.getBonLivraison().getDateLivraison());
             Commande savedCommande = commandeService.save(commande);
             return ResponseEntity.ok(savedCommande);
         } else {
